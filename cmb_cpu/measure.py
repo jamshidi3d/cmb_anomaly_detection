@@ -17,3 +17,7 @@ def correlation_tt(pix_temp, pix_pos, n_samples = 180):
             n_tt[index] += 1
     n_tt[n_tt == 0] = 1
     return c_tt / n_tt
+
+# @njit
+def std_t(pix_temp):
+    return np.std(pix_temp)
