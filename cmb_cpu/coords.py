@@ -1,7 +1,6 @@
 import numpy as np
-# from numba import njit
 
-# @njit
+
 def convert_polar_to_xyz(lat_ndarray, lon_ndarray):
     theta, phi = np.radians(90 - lat_ndarray), np.radians(lon_ndarray)
     nx = np.sin(theta) * np.cos(phi)
@@ -9,7 +8,7 @@ def convert_polar_to_xyz(lat_ndarray, lon_ndarray):
     nz = np.cos(theta)
     return np.column_stack((nx,ny,nz))
 
-# @njit
+
 def rotate_angle_axis(angle, axis, vec_ndarray):
     ux, uy, uz = axis
     I3_mat = np.array([
@@ -34,7 +33,6 @@ def rotate_angle_axis(angle, axis, vec_ndarray):
     return np.transpose(np.matmul(rot_mat , np.transpose(vec_ndarray)))
 
 
-# @njit
 def rotate_pole_to_north(pole_lat, pole_lon, vec_ndarray):
     pole = convert_polar_to_xyz(
         np.array([pole_lat]),

@@ -1,21 +1,37 @@
 import numpy as np
 from numba import njit
-# import healpy
+
 
 def get_z(angle):
     return np.cos(angle * np.pi / 180)
 
-# @njit
-def get_top_bottom_caps(pix_temp, pix_pos, cap_angle):
+
+def get_masked(pix_obj, indices, mask = None):
+    if not mask is None:
+        _mask = mask[indices]
+        masked_obj = tuple(d[indices][_mask] for d in pix_obj)
+        return masked_obj
+    return tuple(d[indices] for d in pix_obj)
+
+
+def get_top_bottom_caps(pix_data, cap_angle, sky_mask = None):
+    pix_temp, pix_pos = pix_data[0], pix_data[1]
     z_border = get_z(cap_angle)
-    indices = pix_pos[:, 2] > z_border
-    top_cap = pix_temp[indices], pix_pos[indices]
-    indices = pix_pos[:, 2] <= z_border
-    bottom_cap = pix_temp[indices], pix_pos[indices]
+    # top cap
+    top_indices = pix_pos[:, 2] > z_border
+    top_cap = get_masked(pix_data, top_indices, sky_mask)
+    # bottom cap
+    bottom_indices = pix_pos[:, 2] <= z_border
+    bottom_cap = get_masked(pix_data, bottom_indices, sky_mask)
     return top_cap, bottom_cap
 
-def get_ring(pix_temp, pix_pos, start_angle, stop_angle):
+
+def get_stripe(pix_data, start_angle, stop_angle, sky_mask = None):
+    pix_temp, pix_pos = pix_data[0], pix_data[1]
     z_start = get_z(start_angle)
-    z_stop = get_z(stop_angle)
-    ring_indices = (z_start >= pix_pos[:, 2]) * (pix_pos[:, 2] >= z_stop)
-    return pix_temp[ring_indices]
+    z_stop  = get_z(stop_angle)
+    stripe_indices = (pix_pos[:, 2] >= z_stop) * (z_start >= pix_pos[:, 2])
+    stripe = get_masked(pix_data, stripe_indices, sky_mask)
+    rest_of_sky_indices = np.array(list(set(range(len(pix_temp))) - set(stripe_indices)))
+    rest_of_sky = get_masked(pix_data, rest_of_sky_indices, sky_mask)
+    return stripe, rest_of_sky
