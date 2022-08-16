@@ -6,6 +6,47 @@ def get_z(angle):
     return np.cos(angle * np.pi / 180)
 
 
+# parallel functions
+@njit
+def get_masked(pix_arr, indices, mask = None):
+    '''used for both temperature and position'''
+    if not mask is None:
+        _mask = mask[indices]
+        masked_obj = pix_arr[indices][_mask]
+        return masked_obj
+    return pix_arr
+
+@njit
+def get_cap_temp(pix_temp, pix_pos, cap_angle, section = 'top', sky_mask = None):
+    z_border = get_z(cap_angle)
+    # top cap
+    if section == 'top':
+        top_indices = pix_pos[:, 2] > z_border
+        top_temp = get_masked(pix_temp, top_indices, sky_mask)
+        return top_temp
+    # bottom cap
+    if section == 'bottom': 
+        bottom_indices = pix_pos[:, 2] <= z_border
+        bottom_cap = get_masked(pix_temp, bottom_indices, sky_mask)
+        return bottom_cap
+
+@njit
+def get_cap_pos(pix_pos, cap_angle, section = 'top', sky_mask = None):
+    z_border = get_z(cap_angle)
+    # top cap
+    if section == 'top':
+        top_indices = pix_pos[:, 2] > z_border
+        top_temp = get_masked(pix_pos, top_indices, sky_mask)
+        return top_temp
+    # bottom cap
+    if section == 'bottom': 
+        bottom_indices = pix_pos[:, 2] <= z_border
+        bottom_cap = get_masked(pix_pos, bottom_indices, sky_mask)
+        return bottom_cap
+
+
+
+# linear calculation
 def get_masked(pix_obj, indices, mask = None):
     if not mask is None:
         _mask = mask[indices]
