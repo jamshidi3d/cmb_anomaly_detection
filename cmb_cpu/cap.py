@@ -73,6 +73,7 @@ def get_stripe(pix_data, start_angle, stop_angle, sky_mask = None):
     z_stop  = get_z(stop_angle)
     stripe_indices = (pix_pos[:, 2] >= z_stop) * (z_start >= pix_pos[:, 2])
     stripe = get_masked(pix_data, stripe_indices, sky_mask)
+    stripe_indices = [i for i in range(len(pix_temp)) if stripe_indices[i]==True]
     rest_of_sky_indices = np.array(list(set(range(len(pix_temp))) - set(stripe_indices)))
     rest_of_sky = get_masked(pix_data, rest_of_sky_indices, sky_mask)
     return stripe, rest_of_sky
