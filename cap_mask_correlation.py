@@ -9,32 +9,39 @@ from cmb_cpu.cap import *
 from cmb_cpu.coords import *
 from cmb_cpu.measure import *
 
-correlation_flag    = 'CORRELATION'
-variance_flag       = 'VARIANCE'
-cap_flag            = 'CAP'
-stripe_flag         = 'STRIPE'
+CORRELATION_FLAG    = 'CORRELATION'
+VARIANCE_FLAG       = 'VARIANCE'
+CAP_FLAG            = 'CAP'
+STRIPE_FLAG         = 'STRIPE'
 
 t0 = time.time()
 
-nside           = 1024
+nside           = 64
 is_masked       = False
-measure_mode    = correlation_flag # variance_flag
-geom            = cap_flag # stripe_flag
+measure_mode    = VARIANCE_FLAG # CORRELATION_FLAG
+geom            = STRIPE_FLAG #CAP_FLAG
 n_samples       = 64*3
-sampling_range  = np.arange(10,170, 1)
+top_cap_size    = 5 # top cap thickness
+dtheta          = 1
+sampling_range  = np.arange(10,171, dtheta)
 cacr = correlation_angle_cutoff_ratio = 2/3
-stripe_size     = 5 # top cap thickness
 
-print("- nSide: {}, Map: {}, Measure: {}, Geometry: {}".format(nside, "Masked" if is_masked else "Inpainted", measure_mode, geom))
+print("- nSide: {} | Map: {} | Measure: {} | Geometry: {}".format(nside, "MASKED" if is_masked else "INPAINTED", measure_mode, geom))
 
 print("- Reading CMB map")
-file_name = "smica.fits"
-cmb_map = hp.read_map(file_name, field=0)
-cmb_map = hp.ud_grade(cmb_map, nside_out=nside)
+cmb_file_name = "smica.fits"
+# cmb_map = hp.read_map(cmb_file_name, field = 0)
+# cmb_map = hp.ud_grade(cmb_map, nside_out = nside)
+
+
+cmb_map, _, _ = hp.read_map('smica.fits',field=(5, 1, 3), nest=True)
+cmb_map = hp.ud_grade(cmb_map, nside_out=nside, order_in='NESTED')
+cmb_map = hp.reorder(cmb_map, inp='NESTED', out='RING')
+
 
 print("- Reading mask")
-path = 'mask.fits'
-mask = hp.read_map(path)
+mask_file_name = 'mask.fits'
+mask = hp.read_map(mask_file_name)
 mask = hp.ud_grade(mask, nside_out=nside)
 
 map_masked = hp.ma(cmb_map)
@@ -42,7 +49,7 @@ map_masked.mask = np.logical_not(mask)
 
 # temperature
 sky_temp = cmb_map #map_masked.data
-sky_temp *= 10**6
+sky_temp = sky_temp * 10**6
 
 # mask
 sky_mask = map_masked.mask
@@ -64,40 +71,42 @@ sky_data = (sky_temp, sky_pos)
 X2 = np.zeros(len(sampling_range))
 _mask = None if not is_masked else sky_mask
 
-if geom == cap_flag:
+if geom == CAP_FLAG:
     cap_angles = sampling_range
     # measure
     for i in range(len(cap_angles)):
         ca = cap_angles[i]
         print("++ Cap of size {} degrees".format(ca))
         top, bottom = get_top_bottom_caps(sky_data, ca, _mask)
-        if measure_mode == correlation_flag:
+        if measure_mode == CORRELATION_FLAG:
             tctt = parallel_correlation_tt(top, n_samples, 16)
             bctt = parallel_correlation_tt(bottom, n_samples, 16)
             max_index = int(cacr * 2 * min(ca, 180-ca) / 180 * n_samples)
             X2[i] = np.sum((tctt[:max_index] - bctt[:max_index])**2)
-        elif measure_mode == variance_flag:
+        elif measure_mode == VARIANCE_FLAG:
             X2[i] = (std_t(top) - std_t(bottom))**2
 
-elif geom == stripe_flag:
+elif geom == STRIPE_FLAG:
     # creating stripes
-    height = 1 - np.cos(stripe_size * np.pi / 180) 
-    stripe_centers = sampling_range * np.pi / 180
-    stripe_starts  = 180 / np.pi * np.arccos(np.cos(stripe_centers) + height/2)
-    stripe_ends    = 180 / np.pi * np.arccos(np.cos(stripe_centers) - height/2)
-    stripe_centers *= 180 / np.pi
+    height = 1 - np.cos(top_cap_size * np.pi / 180)
+    stripe_centers = sampling_range
+    stripe_starts  = 180 / np.pi * np.arccos(np.cos(stripe_centers * np.pi / 180) + height/2)
+    stripe_ends    = 180 / np.pi * np.arccos(np.cos(stripe_centers * np.pi / 180) - height/2)
+    # stripe_starts  = np.arange(10, 171, top_cap_size)
+    # stripe_ends    = np.arange(10 + top_cap_size, 180, top_cap_size)
+
     # measure
     for i in range(len(stripe_centers)):
         print("++ Stripe center {} degrees".format(stripe_centers[i]))
         start = stripe_starts[i]
         end = stripe_ends[i]
         stripe, rest_of_sky = get_stripe(sky_data, start, end, _mask)
-        if measure_mode == correlation_flag:
+        if measure_mode == CORRELATION_FLAG:
             sctt = parallel_correlation_tt(stripe, 16)
             rctt = parallel_correlation_tt(rest_of_sky, 16)
-            max_index = int(cacr * 2 * stripe_size / 180 * n_samples)
+            max_index = int(cacr * 2 * top_cap_size / 180 * n_samples)
             X2[i] = np.sum((sctt[:max_index] - rctt[:max_index])**2)
-        elif measure_mode == variance_flag:
+        elif measure_mode == VARIANCE_FLAG:
             X2[i] = (std_t(stripe) - std_t(rest_of_sky))**2
 
 # plot
@@ -105,25 +114,25 @@ print("- Plotting")
 fig, ax = plt.subplots(1,1)
 fig.set_size_inches(8,5)
 
-if measure_mode == correlation_flag:
+if measure_mode == CORRELATION_FLAG:
     captitle  = r'$\int [C_{tt}^{top}(\theta) - C_{tt}^{bottom}(\theta)]^2 d\theta$'
     strtitle  = r'$\int [C_{tt}^{stripe}(\theta) - C_{tt}^{rest\,of\,sky}(\theta)]^2 d\theta$'
-elif measure_mode == variance_flag:
+elif measure_mode == VARIANCE_FLAG:
     captitle = r'$[\sigma_{top}(T) - \sigma_{bottom}(T)]^2$'
     strtitle = r'$[\sigma_{stripe}(T) - \sigma_{rest\,of\,sky}(T)]^2$'
 
 # xlabel
 capxlabel = r'Cap angle [$\degree$]'
 strxlabel = r'Stripe Center [$\degree$]'
-xlabel = capxlabel if geom == cap_flag else strxlabel
+xlabel = capxlabel if geom == CAP_FLAG else strxlabel
 ax.set_xlabel(xlabel, fontsize=11)
 # ylabel
-ylabel = captitle if geom == cap_flag else strtitle
+ylabel = captitle if geom == CAP_FLAG else strtitle
 ylabel += r'$\>\>\>\> [\mu K]^2$'
 ax.set_ylabel(ylabel, fontsize=12)
 # title
-title = captitle if geom == cap_flag else strtitle
-title += r'$\,\,\,\, Vs \,\,\,\,$ {}'.format("Top Cap Size" if geom == cap_flag else "Stripe Center")
+title = captitle if geom == CAP_FLAG else strtitle
+title += r'$\,\,\,\, Vs \,\,\,\,$ {}'.format("Top Cap Size" if geom == CAP_FLAG else "Stripe Center")
 title += r', '
 title += r'{} Map'.format("Masked" if is_masked else "Inpainted")
 ax.set_title(title, fontsize = 12)
@@ -134,15 +143,16 @@ ax.plot(sampling_range, X2, '-k')
 # maximum of sky
 _max = X2.argmax()
 ax.plot(sampling_range[_max], X2[_max], color = 'orange', marker = "o")
-
+# print(X2)
 max_point_label = "maximum at {}".format(sampling_range[_max])
 ax.legend(["CMB", max_point_label])
 
 file_name = "./output/"
 file_name += "{}".format(nside)
 file_name += "_{}".format("masked" if is_masked else "inpainted")
-file_name += "_{}".format("cap" if geom == cap_flag else "{}stripe".format(stripe_size))
-file_name += "_{}".format("corr2" if measure_mode == correlation_flag else "sigma2")
+file_name += "_{}".format("cap" if geom == CAP_FLAG else "{}stripe".format(top_cap_size))
+file_name += "_{}".format("corr2" if measure_mode == CORRELATION_FLAG else "sigma2")
+file_name += "_{}dtheta".format(dtheta)
 file_name += ".pdf"
 fig.savefig(file_name)
 
