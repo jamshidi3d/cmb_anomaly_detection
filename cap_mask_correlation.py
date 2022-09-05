@@ -9,17 +9,18 @@ from cmb_cpu.cap import *
 from cmb_cpu.coords import *
 from cmb_cpu.measure import *
 
-CORRELATION_FLAG    = 'CORRELATION'
-VARIANCE_FLAG       = 'VARIANCE'
-CAP_FLAG            = 'CAP'
-STRIPE_FLAG         = 'STRIPE'
+D_COR2_FLAG    = 'DELTA_CORRELATION_2'
+D_VAR2_FLAG    = 'DELTA_VARIANCE_2'
+VAR_FLAG       = 'VARIANCE'
+CAP_FLAG       = 'CAP'
+STRIPE_FLAG    = 'STRIPE'
 
 t0 = time.time()
 
-nside           = 64
+nside           = 1024
 is_masked       = False
-measure_mode    = VARIANCE_FLAG # CORRELATION_FLAG
-geom            = STRIPE_FLAG #CAP_FLAG
+measure_mode    = VAR_FLAG #D_VAR2_FLAG # CORRELATION_FLAG
+geom            = CAP_FLAG #STRIPE_FLAG #
 n_samples       = 64*3
 top_cap_size    = 5 # top cap thickness
 dtheta          = 1
@@ -30,8 +31,6 @@ print("- nSide: {} | Map: {} | Measure: {} | Geometry: {}".format(nside, "MASKED
 
 print("- Reading CMB map")
 cmb_file_name = "smica.fits"
-# cmb_map = hp.read_map(cmb_file_name, field = 0)
-# cmb_map = hp.ud_grade(cmb_map, nside_out = nside)
 
 
 cmb_map, _, _ = hp.read_map('smica.fits',field=(5, 1, 3), nest=True)
@@ -78,13 +77,15 @@ if geom == CAP_FLAG:
         ca = cap_angles[i]
         print("++ Cap of size {} degrees".format(ca))
         top, bottom = get_top_bottom_caps(sky_data, ca, _mask)
-        if measure_mode == CORRELATION_FLAG:
+        if measure_mode == D_COR2_FLAG:
             tctt = parallel_correlation_tt(top, n_samples, 16)
             bctt = parallel_correlation_tt(bottom, n_samples, 16)
             max_index = int(cacr * 2 * min(ca, 180-ca) / 180 * n_samples)
             X2[i] = np.sum((tctt[:max_index] - bctt[:max_index])**2)
-        elif measure_mode == VARIANCE_FLAG:
+        elif measure_mode == D_VAR2_FLAG:
             X2[i] = (std_t(top) - std_t(bottom))**2
+        elif measure_mode == VAR_FLAG:
+            X2[i] = std_t(top)
 
 elif geom == STRIPE_FLAG:
     # creating stripes
@@ -101,25 +102,31 @@ elif geom == STRIPE_FLAG:
         start = stripe_starts[i]
         end = stripe_ends[i]
         stripe, rest_of_sky = get_stripe(sky_data, start, end, _mask)
-        if measure_mode == CORRELATION_FLAG:
+        if measure_mode == D_COR2_FLAG:
             sctt = parallel_correlation_tt(stripe, 16)
             rctt = parallel_correlation_tt(rest_of_sky, 16)
             max_index = int(cacr * 2 * top_cap_size / 180 * n_samples)
             X2[i] = np.sum((sctt[:max_index] - rctt[:max_index])**2)
-        elif measure_mode == VARIANCE_FLAG:
+        elif measure_mode == D_VAR2_FLAG:
             X2[i] = (std_t(stripe) - std_t(rest_of_sky))**2
+        elif measure_mode == VAR_FLAG:
+            X2[i] = std_t(stripe)
 
 # plot
 print("- Plotting")
 fig, ax = plt.subplots(1,1)
 fig.set_size_inches(8,5)
 
-if measure_mode == CORRELATION_FLAG:
-    captitle  = r'$\int [C_{tt}^{top}(\theta) - C_{tt}^{bottom}(\theta)]^2 d\theta$'
-    strtitle  = r'$\int [C_{tt}^{stripe}(\theta) - C_{tt}^{rest\,of\,sky}(\theta)]^2 d\theta$'
-elif measure_mode == VARIANCE_FLAG:
+if measure_mode == D_COR2_FLAG:
+    captitle = r'$\int [C_{tt}^{top}(\theta) - C_{tt}^{bottom}(\theta)]^2 d\theta$'
+    strtitle = r'$\int [C_{tt}^{stripe}(\theta) - C_{tt}^{rest\,of\,sky}(\theta)]^2 d\theta$'
+elif measure_mode == D_VAR2_FLAG:
     captitle = r'$[\sigma_{top}(T) - \sigma_{bottom}(T)]^2$'
     strtitle = r'$[\sigma_{stripe}(T) - \sigma_{rest\,of\,sky}(T)]^2$'
+elif measure_mode == VAR_FLAG:
+    captitle = r'$\sigma_{top}(T)$'
+    strtitle = r'$\sigma_{stripe}(T)$'
+
 
 # xlabel
 capxlabel = r'Cap angle [$\degree$]'
@@ -151,7 +158,7 @@ file_name = "./output/"
 file_name += "{}".format(nside)
 file_name += "_{}".format("masked" if is_masked else "inpainted")
 file_name += "_{}".format("cap" if geom == CAP_FLAG else "{}stripe".format(top_cap_size))
-file_name += "_{}".format("corr2" if measure_mode == CORRELATION_FLAG else "sigma2")
+file_name += "_{}".format("corr2" if measure_mode == D_COR2_FLAG else "sigma2" if measure_mode == D_VAR2_FLAG else "sigma" )
 file_name += "_{}dtheta".format(dtheta)
 file_name += ".pdf"
 fig.savefig(file_name)
