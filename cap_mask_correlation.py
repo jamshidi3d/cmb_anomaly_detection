@@ -12,15 +12,15 @@ from cmb_cpu.measure import *
 D_CORR2_FLAG   = 'DELTA_CORRELATION_2'
 D_STD2_FLAG    = 'DELTA_STD_2'
 CORR_FLAG      = 'CORRELATION'
-STD_FLAG       = 'STANDAD_DEVIATION'
+STD_FLAG       = 'STANDARD_DEVIATION'
 CAP_FLAG       = 'CAP'
 STRIPE_FLAG    = 'STRIPE'
 
 t0 = time.time()
 
-nside           = 64
-is_masked       = True
-measure_mode    = CORR_FLAG #STD_FLAG #D_CORR2_FLAG #D_STD2_FLAG
+nside           = 1024
+is_masked       = False
+measure_mode    = STD_FLAG #D_STD2_FLAG #CORR_FLAG #D_CORR2_FLAG
 geom            = STRIPE_FLAG #CAP_FLAG
 n_samples       = 64*3
 stripe_thickness = top_cap_size = 20
@@ -132,11 +132,11 @@ fig, ax = plt.subplots(1,1)
 fig.set_size_inches(8,5)
 
 if measure_mode == D_CORR2_FLAG:
-    captitle = r'$\int [C_{tt}^{top}(\theta) - C_{tt}^{bottom}(\theta)]^2 d\theta$'
-    strtitle = r'$\int [C_{tt}^{stripe}(\theta) - C_{tt}^{rest\,of\,sky}(\theta)]^2 d\theta$'
+    captitle = r'$\int [C_{TT}^{top}(\gamma) - C_{TT}^{bottom}(\gamma)]^2 d\gamma$'
+    strtitle = r'$\int [C_{TT}^{stripe}(\gamma) - C_{TT}^{rest\,of\,sky}(\gamma)]^2 d\gamma$'
 elif measure_mode == CORR_FLAG:
-    captitle = r'$\frac{\int [C_{tt}^{top}(\theta)]^2 d\theta}{\int [C_{tt}^{total}(\theta)]^2 d\theta} - 1$'
-    strtitle = r'$\frac{\int [C_{tt}^{stripe}(\theta)]^2 d\theta}{\int [C_{tt}^{total}(\theta)]^2 d\theta} - 1$'
+    captitle = r'$\frac{\int [C_{TT}^{top}(\gamma)]^2 d\gamma}{\int [C_{TT}^{total}(\gamma)]^2 d\gamma} - 1$'
+    strtitle = r'$\frac{\int [C_{TT}^{stripe}(\gamma)]^2 d\gamma}{\int [C_{TT}^{total}(\gamma)]^2 d\gamma} - 1$'
 elif measure_mode == D_STD2_FLAG:
     captitle = r'$[\sigma_{top}(T) - \sigma_{bottom}(T)]^2$'
     strtitle = r'$[\sigma_{stripe}(T) - \sigma_{rest\,of\,sky}(T)]^2$'
@@ -170,12 +170,12 @@ ax.set_title(title, fontsize = 12)
 
 ax.plot(sampling_range, X2, '-k')
 
-# maximum of sky
-_max = X2.argmax()
-ax.plot(sampling_range[_max], X2[_max], color = 'orange', marker = "o")
+# # maximum of sky
+# _max = X2.argmax()
+# ax.plot(sampling_range[_max], X2[_max], color = 'orange', marker = "o")
 # print(X2)
-max_point_label = "maximum at {}".format(sampling_range[_max])
-ax.legend(["CMB", max_point_label])
+# max_point_label = "maximum at {}".format(sampling_range[_max])
+# ax.legend(["CMB", max_point_label])
 
 file_name = "./output/"
 file_name += "{}".format(nside)
@@ -185,7 +185,17 @@ file_name += "_{}".format(  "dcorr2" if measure_mode == D_CORR2_FLAG else \
                             "dstd2" if measure_mode == D_STD2_FLAG else \
                             "std" if measure_mode == STD_FLAG else "corr")
 file_name += "_{}dtheta".format(dtheta)
-file_name += ".pdf"
-fig.savefig(file_name)
+
+# save data
+fname = file_name + "_sampling_range" + ".txt"
+with open(fname, "w") as file:
+    np.savetxt(file, sampling_range)
+
+fname = file_name + "_result" + ".txt"
+with open(fname, "w") as file:
+    np.savetxt(file, X2)
+
+# save fig
+fig.savefig(file_name + ".pdf")
 
 print("Total execution time: {} seconds".format(time.time() - t0))
