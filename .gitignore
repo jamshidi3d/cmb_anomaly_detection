@@ -1,3 +1,5 @@
-/simulation_data
-/output
 */__pycache__
+/output
+/input/simulation/*.txt
+/input/cmb_fits_files
+/unessential

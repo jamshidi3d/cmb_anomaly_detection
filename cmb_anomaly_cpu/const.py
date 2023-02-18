@@ -1,0 +1,12 @@
+# grometry flags
+CAP_FLAG       = 'CAP'
+STRIPE_FLAG    = 'STRIPE'
+# measure flags
+D_CORR2_FLAG   = 'DELTA_CORRELATION_2'
+D_STD2_FLAG    = 'DELTA_STD_2'
+CORR_FLAG      = 'CORRELATION'
+STD_FLAG       = 'STANDARD_DEVIATION'
+# observable flags
+T   = 'Temprature'
+U   = 'U'
+Q   = 'Q'

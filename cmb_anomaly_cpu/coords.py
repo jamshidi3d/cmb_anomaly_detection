@@ -1,6 +1,10 @@
 import numpy as np
 
 
+def angle_to_z(angle):
+    return np.cos(angle * np.pi / 180)
+
+
 def convert_polar_to_xyz(lat_ndarray, lon_ndarray):
     theta, phi = np.radians(90 - lat_ndarray), np.radians(lon_ndarray)
     nx = np.sin(theta) * np.cos(phi)
@@ -9,7 +13,7 @@ def convert_polar_to_xyz(lat_ndarray, lon_ndarray):
     return np.column_stack((nx,ny,nz))
 
 
-def rotate_angle_axis(angle, axis, vec_ndarray):
+def rotate_angle_axis(vec_ndarray, angle, axis):
     ux, uy, uz = axis
     I3_mat = np.array([
         [1, 0, 0],
@@ -33,7 +37,7 @@ def rotate_angle_axis(angle, axis, vec_ndarray):
     return np.transpose(np.matmul(rot_mat , np.transpose(vec_ndarray)))
 
 
-def rotate_pole_to_north(pole_lat, pole_lon, vec_ndarray):
+def rotate_pole_to_north(vec_ndarray, pole_lat, pole_lon):
     pole = convert_polar_to_xyz(
         np.array([pole_lat]),
         np.array([pole_lon])
@@ -43,4 +47,4 @@ def rotate_pole_to_north(pole_lat, pole_lon, vec_ndarray):
     axis  = np.cross(pole, north)[0]
     axis_length = np.sqrt(np.dot(axis, np.transpose(axis)))
     axis /= axis_length
-    return rotate_angle_axis(angle, axis, vec_ndarray)
+    return rotate_angle_axis(vec_ndarray, angle, axis)
