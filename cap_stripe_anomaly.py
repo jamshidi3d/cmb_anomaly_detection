@@ -2,7 +2,7 @@ import cmb_anomaly_cpu as cac
 
 cmb_fpath       = "./input/cmb_fits_files/COM_CMB_IQU-commander_2048_R3.00_full.fits"
 mask_fpath      = "./input/cmb_fits_files/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
-input_params_fpath    = './input/run_parametrs.json'
+input_params_fpath    = './input/run_parameters.json'
 
 input_params = cac.dtypes.run_parameters.create_from_json(input_params_fpath)
 

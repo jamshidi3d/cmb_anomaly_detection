@@ -7,6 +7,6 @@ D_STD2_FLAG    = 'DELTA_STD_2'
 CORR_FLAG      = 'CORRELATION'
 STD_FLAG       = 'STANDARD_DEVIATION'
 # observable flags
-T   = 'Temprature'
+T   = 'T'
 U   = 'U'
 Q   = 'Q'

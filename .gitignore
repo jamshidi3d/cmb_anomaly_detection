@@ -3,3 +3,4 @@
 /input/simulation/*.txt
 /input/cmb_fits_files
 /unessential
+/test.ipynb

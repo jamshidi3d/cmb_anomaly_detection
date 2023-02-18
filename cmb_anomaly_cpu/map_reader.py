@@ -38,9 +38,9 @@ def read_pos(nside = 64, pole_lat = 0, pole_lon = 0):
 
 def get_data_pix(data_fpath, mask_fpath, params:run_parameters):
     read_data = read_temp
-    if params.observable == const.U:
+    if params.observable_flag == const.U:
         read_data = read_u
-    elif params.observable == const.Q:
+    elif params.observable_flag == const.Q:
         read_data = read_q
     _data = read_data(data_fpath, params.nside)
     _pos = read_pos(params.nside, params.pole_lat, params.pole_lon)

@@ -14,31 +14,32 @@ class pix_data:
     def copy(self):
         return pix_data(np.copy(self.data), np.copy(self.pos), np.copy(self.mask))
 
-    def get_masked(self, filter) -> "pix_data":
+    def get_filtered(self, filter) -> "pix_data":
         if self.mask is None:
-            return pix_data(self.data, self.pos)
+            return pix_data(self.data[filter], self.pos[filter])
         _mask = self.mask[filter]
         return pix_data(self.data[filter][_mask], self.pos[filter][_mask])
 
-    def get_top_bottom_caps(self, cap_angle) -> tuple["pix_data", "pix_data"]:
+    def get_top_bottom_caps(self, cap_angle):
         z_border = angle_to_z(cap_angle)
         # top cap
         top_filter = self.pos[:, 2] > z_border
-        top_cap = self.get_masked(top_filter)
+        top_cap = self.get_filtered(top_filter)
         # bottom cap
         bottom_filter = self.pos[:, 2] <= z_border
-        bottom_cap = self.get_masked(bottom_filter)
+        bottom_cap = self.get_filtered(bottom_filter)
+        print(top_cap.data[-1])
         return top_cap, bottom_cap
 
-    def get_stripe(self, start_angle, stop_angle) -> tuple["pix_data", "pix_data"]:
+    def get_stripe(self, start_angle, stop_angle):
         '''returns a stripe between given angles and the rest of sky\n
         start and stop angles have to be in degrees'''
         z_start = angle_to_z(start_angle)
         z_stop  = angle_to_z(stop_angle)
         stripe_filter = (z_start >= self.pos[:, 2]) * (self.pos[:, 2] >= z_stop)
-        stripe = self.get_masked(stripe_filter)
+        stripe = self.get_filtered(stripe_filter)
         rest_of_sky_filter = np.array([not i for i in stripe_filter])
-        rest_of_sky = self.get_masked(rest_of_sky_filter)
+        rest_of_sky = self.get_filtered(rest_of_sky_filter)
         return stripe, rest_of_sky
 
 
@@ -94,7 +95,7 @@ class run_parameters:
         self.redefine_sampling_range()
 
     def redefine_sampling_range(self):
-        self.sampling_range = np.zeros(self.sampling_start, self.sampling_stop, self.dtheta)
+        self.sampling_range = np.arange(self.sampling_start, self.sampling_stop, self.dtheta)
 
     @staticmethod
     def create_from_json(fpath):
@@ -116,3 +117,22 @@ class run_parameters:
         sampling_stop       = input_params['sampling_stop'],
         )
         return _inputs
+    
+    def create_json(self, fpath):
+        _inputs = {
+            'observable_flag': self.observable_flag,
+            'nside': self.nside,
+            'pole_lat':self.pole_lat,
+            'pole_lon':self.pole_lon,
+            'is_masked' :        self.is_masked,
+            'measure_flag': self.measure_flag,
+            'geom_flag':self.geom_flag,
+            'nsamples':self.nsamples,
+            'stripe_thickness':self.stripe_thickness,
+            'dtheta':self.dtheta,
+            'corr_ang_cutoff_ratio':self.cacr,
+            'sampling_start':self.sampling_start,
+            'sampling_stop':self.sampling_stop,
+        }
+        with open(fpath,'w') as file:
+            file.write(json.dumps(_inputs, indent=4))

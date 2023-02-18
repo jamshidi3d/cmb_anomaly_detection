@@ -1,0 +1,15 @@
+{
+    "observable_flag": "T",
+    "nside": 64,
+    "pole_lat": -20,
+    "pole_lon": 221,
+    "is_masked": false,
+    "measure_flag": "STANDARD_DEVIATION",
+    "geom_flag": "CAP",
+    "nsamples": 192,
+    "stripe_thickness": 20,
+    "dtheta": 1,
+    "corr_ang_cutoff_ratio": 0.6666666666666666,
+    "sampling_start": 15,
+    "sampling_stop": 165
+}
