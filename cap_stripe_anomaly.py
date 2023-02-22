@@ -19,9 +19,10 @@ sky_pix = cac.map_reader.get_data_pix(cmb_fpath, mask_fpath, input_params)
 # Measure
 if input_params.geom_flag == cac.const.CAP_FLAG:
     measure_results = cac.measure.get_cap_anomaly(sky_pix, input_params)
-else:
-    #if input_params.geom_flag == cmb_cpu.STRIPE_FLAG:
+elif input_params.geom_flag == cac.const.STRIPE_FLAG:
     measure_results = cac.measure.get_stripe_anomaly(sky_pix, input_params)
+else:
+    raise ValueError("Geometry flag is not set correctly")
 
 # Save data
 cac.output.save_data_to_txt(input_params, measure_results)

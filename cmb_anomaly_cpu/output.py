@@ -77,15 +77,19 @@ def get_xlabel_tex(params:run_parameters):
     xlabel = capxlabel if params.geom_flag == const.CAP_FLAG else strxlabel
     return xlabel
 
+unit_dict = {
+    const.U:'Cd',
+    const.Q:'Cd',
+    const.SQR_U2Q2:'Cd^2',
+    const.T:'\mu K'
+} #TODO
 def get_ylabel_tex(params:run_parameters):
     ylabel = get_measure_tex(params)
-    if params.measure_flag != const.T:
-        return ylabel
     ylabel += r'$\>\>\>\>$'
     if params.measure_flag == const.STD_FLAG:
-        ylabel += r'$[\mu K]$'
+        ylabel += r'$[{unit}]$'.format(unit = unit_dict[params.observable_flag])
     elif params.measure_flag == const.D_CORR2_FLAG:
-        ylabel += r'$[\mu K]^4$'
+        ylabel += r'$[{unit}]^4$'.format(unit = unit_dict[params.observable_flag])
     elif params.measure_flag == const.CORR_FLAG:
         pass
     return ylabel

@@ -28,6 +28,17 @@ def read_u(fpath, nside):
 def read_q(fpath, nside):
     pass
 
+def read_sqr_u2q2(fpath, nside):
+    _u = read_u(fpath, nside)
+    _q = read_q(fpath, nside)
+    return np.sqrt(_u**2 + _q**2)
+
+def read_e_mode(fpath, nside):
+    pass
+
+def read_b_mode(fpath, nside):
+    pass
+
 def read_pos(nside = 64, pole_lat = 0, pole_lon = 0):
     npix     = np.arange(12 * nside **2)
     lon, lat = hp.pix2ang(nside, npix, lonlat = True)
@@ -36,12 +47,15 @@ def read_pos(nside = 64, pole_lat = 0, pole_lon = 0):
     return pos
 
 
+func_dict = {
+    const.U : read_u,
+    const.T : read_temp,
+    const.SQR_U2Q2 : read_sqr_u2q2,
+    const.E_MODE : read_e_mode,
+    const.B_MODE : read_b_mode,
+}
 def get_data_pix(data_fpath, mask_fpath, params:run_parameters):
-    read_data = read_temp
-    if params.observable_flag == const.U:
-        read_data = read_u
-    elif params.observable_flag == const.Q:
-        read_data = read_q
+    read_data = func_dict[params.observable_flag]
     _data = read_data(data_fpath, params.nside)
     _pos = read_pos(params.nside, params.pole_lat, params.pole_lon)
     _mask = read_mask(mask_fpath) if params.is_masked else None
