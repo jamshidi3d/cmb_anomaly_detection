@@ -6,12 +6,14 @@ from . import const
 
 def get_output_path(params:run_parameters):
     output_fpath = "./output/"
+    output_fpath += "{}".format(params.observable_flag)
     output_fpath += "{}".format(params.nside)
     output_fpath += "_{}".format("masked" if params.is_masked else "inpainted")
     output_fpath += "_{}".format("cap" if params.geom_flag == const.CAP_FLAG else "{}stripe".format(params.stripe_thickness))
     output_fpath += "_{}".format("dcorr2" if params.measure_flag == const.D_CORR2_FLAG else \
                                 "dstd2" if params.measure_flag == const.D_STD2_FLAG else \
-                                "std" if params.measure_flag == const.STD_FLAG else "corr")
+                                "std" if params.measure_flag == const.STD_FLAG else \
+                                "corr" if params.measure_flag == const.CORR_FLAG else "mean")
     output_fpath += "_{}dtheta".format(params.dtheta)
     return output_fpath
 
@@ -65,6 +67,9 @@ def get_measure_tex(params:run_parameters):
     elif params.measure_flag == const.STD_FLAG:
         captitle = r'$\sigma_{{top}}({obs})$'.format(obs = obs)
         strtitle = r'$\sigma_{{stripe}}({obs})$'.format(obs = obs)
+    elif params.measure_flag == const.MEAN_FLAG:
+        captitle = r'$<{obs}>_{{top}}$'.format(obs = obs)
+        strtitle = r'$<{obs}>_{{stripe}}$'.format(obs = obs)
     # returns
     if params.geom_flag == const.CAP_FLAG:
         return captitle
