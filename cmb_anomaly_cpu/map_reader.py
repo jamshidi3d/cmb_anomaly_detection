@@ -15,20 +15,25 @@ def read_mask(fpath, nside):
     mask = np.array([not off_pix for off_pix in mask])
     return mask
 
-def read_temp(fpath, nside):
-    '''returns temprature in mu.K units'''
-    tmap, _, _ = hp.read_map(fpath, field=(5, 1, 3), nest=True)
-    tmap = hp.ud_grade(tmap, nside_out=nside, order_in='NESTED')
-    tmap = hp.reorder(tmap, inp='NESTED', out='RING')
-    return tmap * 10**6
+def read_param(fpath, nside, field):
+    map = hp.read_map(fpath, field = field, nest=True)
+    map = hp.ud_grade(map, nside_out=nside, order_in='NESTED')
+    map = hp.reorder(map, inp='NESTED', out='RING')
+    return map * 10**6
 
-def read_u(fpath, nside):
-    pass
+def read_temp(fpath, nside):
+    '''returns inpainted temprature in mu.K units'''
+    return read_param(fpath, nside, 5)
 
 def read_q(fpath, nside):
-    pass
+    '''returns inpainted Q_stokes in mu.K units'''
+    return read_param(fpath, nside, 6)
 
-def read_sqr_u2q2(fpath, nside):
+def read_u(fpath, nside):
+    '''returns inpainted U_stokes in mu.K units'''
+    return read_param(fpath, nside, 7)
+
+def read_p_stregth(fpath, nside):
     _u = read_u(fpath, nside)
     _q = read_q(fpath, nside)
     return np.sqrt(_u**2 + _q**2)
@@ -50,7 +55,7 @@ def read_pos(nside = 64, pole_lat = 0, pole_lon = 0):
 func_dict = {
     const.U : read_u,
     const.T : read_temp,
-    const.SQR_U2Q2 : read_sqr_u2q2,
+    const.P : read_p_stregth,
     const.E_MODE : read_e_mode,
     const.B_MODE : read_b_mode,
 }

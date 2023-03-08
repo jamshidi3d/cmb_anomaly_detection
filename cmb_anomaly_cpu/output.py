@@ -78,11 +78,11 @@ def get_xlabel_tex(params:run_parameters):
     return xlabel
 
 unit_dict = {
-    const.U:'Cd',
-    const.Q:'Cd',
-    const.SQR_U2Q2:'Cd^2',
+    const.U:'\mu K',
+    const.Q:'\mu K',
+    const.P:'\mu K',
     const.T:'\mu K'
-} #TODO
+}
 def get_ylabel_tex(params:run_parameters):
     ylabel = get_measure_tex(params)
     ylabel += r'$\>\>\>\>$'

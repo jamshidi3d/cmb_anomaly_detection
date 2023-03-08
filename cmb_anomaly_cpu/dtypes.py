@@ -54,6 +54,7 @@ class run_parameters:
                 measure_flag = None,
                 geom_flag = None,
                 nsamples = None,
+                nblocks = 4,
                 stripe_thickness = None,
                 dtheta = None,
                 cacr = None,
@@ -67,6 +68,7 @@ class run_parameters:
         self.measure_flag       = measure_flag
         self.geom_flag          = geom_flag
         self.nsamples           = nsamples
+        self.nblocks            = nblocks
         self.stripe_thickness   = stripe_thickness
         '''also top cap size'''
         self.dtheta             = dtheta
@@ -110,6 +112,7 @@ class run_parameters:
         measure_flag        = input_params['measure_flag'],
         geom_flag           = input_params['geom_flag'],
         nsamples            = input_params['nsamples'],
+        nblocks             = input_params['nblocks'],
         stripe_thickness    = input_params['stripe_thickness'],
         dtheta              = input_params['dtheta'],
         cacr                = input_params['corr_ang_cutoff_ratio'],
@@ -128,6 +131,7 @@ class run_parameters:
             'measure_flag': self.measure_flag,
             'geom_flag':self.geom_flag,
             'nsamples':self.nsamples,
+            'nblocks':self.nblocks,
             'stripe_thickness':self.stripe_thickness,
             'dtheta':self.dtheta,
             'corr_ang_cutoff_ratio':self.cacr,

@@ -97,3 +97,7 @@ def correlation(pdata:pix_data, n_samples = 180, mode = 'TT'):
 def std_pix_data(pdata:pix_data):
     _data = pdata.data
     return np.std(_data)
+
+def mean_pix_data(pdata:pix_data):
+    _data = pdata.data
+    return np.mean(_data)
