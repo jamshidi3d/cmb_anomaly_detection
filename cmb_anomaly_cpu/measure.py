@@ -115,5 +115,5 @@ def get_stripe_anomaly(sky_pix:pix_data, params:run_parameters):
         start = stripe_starts[i]
         end = stripe_ends[i]
         stripe, rest_of_sky = sky_pix.get_stripe(start, end)
-        measure_results = measure_func(stripe, rest_of_sky, **kwargs)
+        measure_results[i] = measure_func(stripe, rest_of_sky, **kwargs)
     return measure_results

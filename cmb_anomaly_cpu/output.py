@@ -7,7 +7,7 @@ from . import const
 def get_output_path(params:run_parameters):
     output_fpath = "./output/"
     output_fpath += "{}".format(params.observable_flag)
-    output_fpath += "{}".format(params.nside)
+    output_fpath += "_{}".format(params.nside)
     output_fpath += "_{}".format("masked" if params.is_masked else "inpainted")
     output_fpath += "_{}".format("cap" if params.geom_flag == const.CAP_FLAG else "{}stripe".format(params.stripe_thickness))
     output_fpath += "_{}".format("dcorr2" if params.measure_flag == const.D_CORR2_FLAG else \

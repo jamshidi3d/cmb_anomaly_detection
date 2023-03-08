@@ -6,10 +6,11 @@ input_params_fpath    = './input/run_parameters.json'
 
 input_params = cac.dtypes.run_parameters.create_from_json(input_params_fpath)
 
-print("- nSide: {} | Map: {} | Measure: {} | Geometry: {}"\
-        .format(input_params.nside,
-                "MASKED" if input_params.is_masked else "INPAINTED",
+print("=> Observable: {} | Measure: {} | Nside: {} | MapType: {} | Geometry: {}"\
+        .format(input_params.observable_flag,
                 input_params.measure_flag,
+                input_params.nside,
+                "MASKED" if input_params.is_masked else "INPAINTED",
                 input_params.geom_flag
         )
     )
