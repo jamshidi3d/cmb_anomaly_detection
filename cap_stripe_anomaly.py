@@ -1,4 +1,4 @@
-import cmb_anomaly_cpu as cac
+import cap_stripe as cac
 
 cmb_fpath       = "./input/cmb_fits_files/COM_CMB_IQU-commander_2048_R3.00_full.fits"
 mask_fpath      = "./input/cmb_fits_files/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
