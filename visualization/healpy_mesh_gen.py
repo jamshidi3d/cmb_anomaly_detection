@@ -10,7 +10,7 @@ def file3d_obj_txt(element_arr, str_key):
         txt += str_key + space + "".join(space + str(component) for component in elem) + next_line
     return txt
 
-nside = 16
+nside = 64
 npix = 12 * nside**2
 # 4 corners for each pixel and 3 coords for each corner
 v_coords = np.zeros((npix * 4, 3))
