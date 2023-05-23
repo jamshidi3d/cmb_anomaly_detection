@@ -2,7 +2,7 @@ import numpy as np
 import healpy as hp
 # from astropy.io import fits
 
-from .dtypes import pix_data, run_parameters
+from .dtypes import pix_data
 from . import coords
 from . import const
 
@@ -59,9 +59,11 @@ func_dict = {
     const.E_MODE : read_e_mode,
     const.B_MODE : read_b_mode,
 }
-def get_data_pix(data_fpath, mask_fpath, params:run_parameters):
-    read_data = func_dict[params.observable_flag]
-    _data = read_data(data_fpath, params.nside)
-    _pos = read_pos(params.nside, params.pole_lat, params.pole_lon)
-    _mask = read_mask(mask_fpath) if params.is_masked else None
+def get_data_pix_from_cmb(data_fpath, mask_fpath, **kwargs):
+    pole_lat, pole_lon, nside, observable_flag, is_masked = \
+        kwargs['pole_lat'], kwargs['pole_lon'], kwargs['nside'], kwargs['observable_flag'], kwargs['is_masked']
+    read_data = func_dict[observable_flag]
+    _data = read_data(data_fpath, nside)
+    _pos = read_pos(nside, pole_lat, pole_lon)
+    _mask = read_mask(mask_fpath) if is_masked else None
     return pix_data(_data, _pos, _mask)

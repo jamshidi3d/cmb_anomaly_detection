@@ -2,6 +2,8 @@
 /output
 /input/simulation/*.txt
 /input/cmb_fits_files
+/input/smica_sims
+/input/commander_sims
 /unessential
 /test.ipynb
 *.blend1
