@@ -3,7 +3,9 @@ from . import (
     coords,
     dtypes,
     map_reader,
+    map_filler,
     measure,
     output,
-    utils
+    math_utils,
+    stat_utils
 )

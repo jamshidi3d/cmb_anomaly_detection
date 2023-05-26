@@ -4,7 +4,7 @@ STRIPE_FLAG     = 'STRIPE'
 # measure flags
 D_CORR2_FLAG    = 'D_CORR_2'
 D_STD2_FLAG     = 'D_STD_2'
-CORR_FLAG       = 'CORRELATION'
+CORR_FLAG       = 'CORR'
 STD_FLAG        = 'STD'
 MEAN_FLAG       = 'MEAN'
 # observable flags

@@ -2,7 +2,7 @@ import numpy as np
 import json
 
 from .coords import angle_to_z
-from . import const
+from . import math_utils as mu
 
 
 class pix_data:
@@ -40,3 +40,9 @@ class pix_data:
         rest_of_sky_filter = np.array([not i for i in stripe_filter])
         rest_of_sky = self.get_filtered(rest_of_sky_filter)
         return stripe, rest_of_sky
+    
+    def add_multipole_modulation(self, a_l):
+        # in legendre polynomials z = cos(theta) is used
+        z = self.pos[:, 2] 
+        legendre_on_pix = np.array([a_l[i] * mu.legendre(i, z) for i in range(len(a_l))])
+        self.data *= (1 + np.sum(legendre_on_pix, axis = 0))

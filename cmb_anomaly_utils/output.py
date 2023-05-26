@@ -1,18 +1,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib
 
 from . import const
 
 def get_output_path(**kwargs):
+    measure_flag = kwargs['measure_flag']
     output_fpath = "./output/"
     output_fpath += "{}".format(kwargs['observable_flag'])
     output_fpath += "_{}".format(kwargs['nside'])
     output_fpath += "_{}".format("masked" if kwargs['is_masked'] else "inpainted")
     output_fpath += "_{}".format("cap" if kwargs['geom_flag'] == const.CAP_FLAG else "{}stripe".format(kwargs['stripe_thickness']))
-    output_fpath += "_{}".format("dcorr2" if kwargs['measure_flag'] == const.D_CORR2_FLAG else \
-                                "dstd2" if kwargs['measure_flag'] == const.D_STD2_FLAG else \
-                                "std" if kwargs['measure_flag'] == const.STD_FLAG else \
-                                "corr" if kwargs['measure_flag'] == const.CORR_FLAG else "mean")
+    output_fpath += "_{}".format("dcorr2" if measure_flag == const.D_CORR2_FLAG else \
+                                "dstd2" if measure_flag == const.D_STD2_FLAG else \
+                                "std" if measure_flag == const.STD_FLAG else \
+                                "corr" if measure_flag == const.CORR_FLAG else "mean")
     output_fpath += "_{}dtheta".format(kwargs['dtheta'])
     return output_fpath
 
@@ -28,12 +30,14 @@ def save_data_to_txt(measure_result, **kwargs):
 
 
 def save_fig_to_pdf(fig:plt.Figure, **kwargs):
+    matplotlib.use('Agg') # for writing to files only
     output_fpath = get_output_path(**kwargs)
     fig.savefig(output_fpath + ".pdf", transparent=True)
 
 
 def get_plot_fig(measure_result, **kwargs):
     print("- Plotting")
+    matplotlib.use('Agg') # for writing to files only
     fig, ax = plt.subplots(1,1)
     fig.set_size_inches(8,5)
     # xlabel
@@ -51,28 +55,28 @@ def get_plot_fig(measure_result, **kwargs):
 
 #---------- TeX style string generators ----------
 def get_measure_tex(**kwargs):
-    obs = kwargs['observable_flag']
+    obs, measure_flag, geom_flag = kwargs['observable_flag'], kwargs['measure_flag'], kwargs['geom_flag']
     double_obs = '{'+ obs + obs +'}'
     # TeX style titles
     if kwargs['measure_flag'] == const.D_CORR2_FLAG:
         captitle = r'$\int [C_{double_obs}^{{top}}(\gamma) - C_{double_obs}^{{bottom}}(\gamma)]^2 d\gamma$'.format(double_obs = double_obs)
         strtitle = r'$\int [C_{double_obs}^{{stripe}}(\gamma) - C_{double_obs}^{{rest\,of\,sky}}(\gamma)]^2 d\gamma$'.format(double_obs = double_obs)
-    elif kwargs['measure_flag'] == const.CORR_FLAG:
-        captitle = r'$\frac{\int [C_{double_obs}^{{top}}(\gamma)]^2 d\gamma}{\int [C_{double_obs}^{{total}}(\gamma)]^2 d\gamma} - 1$'#.format(double_obs = double_obs)
-        strtitle = r'$\frac{\int [C_{double_obs}^{{stripe}}(\gamma)]^2 d\gamma}{\int [C_{double_obs}^{{total}}(\gamma)]^2 d\gamma} - 1$'#.format(double_obs = double_obs)
-    elif kwargs['measure_flag'] == const.D_STD2_FLAG:
+    elif measure_flag == const.CORR_FLAG:
+        captitle = r'$\frac {{ \int [C_{double_obs}^{{top}}(\gamma)]^2 d\gamma }} {{ \int [C_{double_obs}^{{total}}(\gamma)]^2 d\gamma }}  - 1$'.format(double_obs = double_obs)
+        strtitle = r'$\frac {{ \int [C_{double_obs}^{{stripe}}(\gamma)]^2 d\gamma }} {{ \int [C_{double_obs}^{{total}}(\gamma)]^2 d\gamma }} - 1$'.format(double_obs = double_obs)
+    elif measure_flag == const.D_STD2_FLAG:
         captitle = r'$[\sigma_{{top}}({obs}) - \sigma_{{bottom}}({obs})]^2$'.format(obs = obs)
         strtitle = r'$[\sigma_{{stripe}}({obs}) - \sigma_{{rest\,of\,sky}}({obs})]^2$'.format(obs = obs)
-    elif kwargs['measure_flag'] == const.STD_FLAG:
+    elif measure_flag == const.STD_FLAG:
         captitle = r'$\sigma_{{top}}({obs})$'.format(obs = obs)
         strtitle = r'$\sigma_{{stripe}}({obs})$'.format(obs = obs)
-    elif kwargs['measure_flag'] == const.MEAN_FLAG:
+    elif measure_flag == const.MEAN_FLAG:
         captitle = r'$<{obs}>_{{top}}$'.format(obs = obs)
         strtitle = r'$<{obs}>_{{stripe}}$'.format(obs = obs)
     # returns
-    if kwargs['geom_flag'] == const.CAP_FLAG:
+    if geom_flag == const.CAP_FLAG:
         return captitle
-    elif kwargs['geom_flag'] == const.STRIPE_FLAG:
+    elif geom_flag == const.STRIPE_FLAG:
         return strtitle
 
 def get_xlabel_tex(**kwargs):

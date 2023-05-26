@@ -3,9 +3,14 @@ import healpy as hp
 # from astropy.io import fits
 
 from .dtypes import pix_data
-from . import coords
-from . import const
+from . import coords, const
 
+
+fname_dict = {const.T: 'temp'}
+def get_sim_attr(sims_path, observable = const.T, num = 0):
+    fname = sims_path + "sim{:05}_".format(num) + fname_dict[observable] +'.txt'
+    attr_list = np.loadtxt(fname)
+    return attr_list
 
 def read_mask(fpath, nside):
     mask = hp.read_map(fpath)
@@ -15,7 +20,7 @@ def read_mask(fpath, nside):
     mask = np.array([not off_pix for off_pix in mask])
     return mask
 
-def read_param(fpath, nside, field):
+def read_attr(fpath, nside, field):
     map = hp.read_map(fpath, field = field, nest=True)
     map = hp.ud_grade(map, nside_out=nside, order_in='NESTED')
     map = hp.reorder(map, inp='NESTED', out='RING')
@@ -23,15 +28,15 @@ def read_param(fpath, nside, field):
 
 def read_temp(fpath, nside):
     '''returns inpainted temprature in mu.K units'''
-    return read_param(fpath, nside, 5)
+    return read_attr(fpath, nside, 5)
 
 def read_q(fpath, nside):
     '''returns inpainted Q_stokes in mu.K units'''
-    return read_param(fpath, nside, 6)
+    return read_attr(fpath, nside, 6)
 
 def read_u(fpath, nside):
     '''returns inpainted U_stokes in mu.K units'''
-    return read_param(fpath, nside, 7)
+    return read_attr(fpath, nside, 7)
 
 def read_p_stregth(fpath, nside):
     _u = read_u(fpath, nside)

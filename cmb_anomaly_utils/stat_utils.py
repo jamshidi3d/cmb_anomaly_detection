@@ -1,44 +1,14 @@
-import numpy as np
 from numba import njit, prange
+import numpy as np
 import concurrent.futures
 
 from .dtypes import pix_data
-
+from .math_utils import clamp
 
 def get_sampling_range(**kwargs):
     sampling_start, sampling_stop, nsamples = \
         kwargs['sampling_start'], kwargs['sampling_stop'], kwargs['nsamples']
     return np.linspace(sampling_start, sampling_stop, nsamples)
-
-@njit
-def clamp(x, min = -1, max = 1):
-    if x >= 1:
-        return 0.99999999
-    if x <= -1:
-        return -0.99999999
-    return x
-
-@njit
-def legendre(n, x):
-    '''Legendre Polynomials'''
-    if(n == 0):
-        # P0 = 1
-        return np.ones(len(x)) if type(x) == np.ndarray else 1 
-    elif(n == 1):
-        # P1 = x
-        return x 
-    else:
-        return (((2*n)-1) * x * legendre(n-1, x) - (n-1) * legendre(n-2, x)) / float(n)
-
-@njit
-def integrate_curve(x, y):
-    dx = x[1:] - x[:-1]
-    mean_y = 0.5 * (y[1:] + y[:-1])
-    return np.sum(mean_y * dx)
-
-def extrapolate_curve(x, y, extended_x):
-    pass
-
 
 #----------- Parallel -----------
 def get_block(pdata:pix_data, block_size, block_num):
