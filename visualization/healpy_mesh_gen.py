@@ -7,7 +7,7 @@ def file3d_obj_txt(element_arr, str_key):
     txt = ""
     space, next_line = " ", "\n"
     for elem in element_arr:
-        txt += str_key + space + "".join(space + str(component) for component in elem) + next_line
+        txt += str_key + "".join(space + str(component) for component in elem) + next_line
     return txt
 
 nside = 64

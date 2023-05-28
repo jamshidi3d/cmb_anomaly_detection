@@ -79,8 +79,12 @@ def get_cap_anomaly(sky_pix:pix_data, **kwargs):
 def get_stripe_limits(stripe_thickness, sampling_range):
     height = 1 - np.cos(stripe_thickness * np.pi / 180)
     stripe_centers = sampling_range
-    stripe_starts  = 180 / np.pi * np.arccos(np.cos(stripe_centers * np.pi / 180) + height/2)
-    stripe_ends    = 180 / np.pi * np.arccos(np.cos(stripe_centers * np.pi / 180) - height/2)
+    # stripe starts
+    top_lim = np.cos(stripe_centers * np.pi / 180) + height / 2
+    stripe_starts  = 180 / np.pi * np.arccos(np.clip(top_lim, -1, 1))
+    # stripe ends
+    bottom_lim = np.cos(stripe_centers * np.pi / 180) - height / 2
+    stripe_ends    = 180 / np.pi * np.arccos(np.clip(bottom_lim, -1, 1))
     return stripe_starts, stripe_centers, stripe_ends
 
 def get_stripe_dcorr2(stripe, rest_of_sky, **kwargs):

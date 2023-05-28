@@ -1,6 +1,9 @@
 import numpy as np
 import json
 
+import matplotlib.pyplot as plt
+import matplotlib
+
 import cmb_anomaly_utils as cau
 from cmb_anomaly_utils.dtypes import pix_data
 from cmb_anomaly_utils import math_utils as mu
@@ -14,43 +17,50 @@ json_params_file =  open(input_params_fpath,'r')
 inputs = json.loads(json_params_file.read())
 
 max_l = 6
-max_sim_num = 1
+max_sim_num = 1000
 inputs['nside'] = 64
-
-cmb_a_l = []
 
 # modify sampling range to extrapolate curves
 inputs['sampling_range'] = cau.stat_utils.get_sampling_range(**inputs)
 sampling_range = inputs['sampling_range']
-ext_nsamples = 180/(np.max(sampling_range) - np.min(sampling_range)) * len(sampling_range)
-ext_range = np.linspace(0, 180, int(ext_nsamples) )
+ext_range = cau.stat_utils.get_extended_range(sampling_range, 0, 180)
 
 # take legendre expansion of cmb first
 cmb_pix_data        = cau.map_reader.get_data_pix_from_cmb(cmb_fpath, mask_fpath, **inputs)
 cmb_measure_results = cau.measure.get_stripe_anomaly(cmb_pix_data , **inputs)
-ext_curve           = mu.extrapolate_curve(sampling_range, cmb_measure_results, ext_range)
-# convert degree to radians to compute legendre coeffs
-print(ext_range * np.pi / 180)
-cmb_a_l = mu.get_legendre_coefficients(ext_range * np.pi / 180, ext_curve, max_l)
+# cmb_ext_results     = mu.extrapolate_curve(sampling_range, cmb_measure_results, ext_range, 'clamped', 0)
 
+
+# convert degree to radians to compute legendre coeffs
+cmb_a_l = mu.get_legendre_modulation(ext_range * np.pi / 180, cmb_measure_results, max_l)
 
 sims_a_l = []
 sim_pos = cau.map_reader.read_pos(inputs['nside'])
-
+_inputs = inputs.copy()
+_inputs['measure_flag'] = cau.const.MEAN_FLAG
 for i in range(max_sim_num):
+    print(f'sim number {i:04}')
     try:
         sim_temp = cau.map_reader.get_sim_attr(sims_path, 'T', i)
     except:
         print("simulation number {:05} is currupted!".format(i))
         continue
+    sim_temp *= 10**6
     sim_pix_data        = cau.dtypes.pix_data(sim_temp, np.copy(sim_pos))
-    sim_pix_data.add_multipole_modulation(cmb_a_l)
+    sim_pix_data.add_legendre_modulation(cmb_a_l)
     sim_measure_results = cau.measure.get_stripe_anomaly(sim_pix_data , **inputs)
-    ext_curve           = mu.extrapolate_curve(sampling_range, sim_measure_results, ext_range)
-    _a_l                = mu.get_legendre_coefficients(ext_range * np.pi / 180, ext_curve, max_l)
+    sim_ext_results     = mu.extrapolate_curve(sampling_range, sim_measure_results, ext_range)
+    _a_l                = mu.get_legendre_modulation(ext_range * np.pi / 180, sim_ext_results, max_l)
     sims_a_l.append(_a_l)
+
 # convert to numpy array
 sims_a_l = np.array(sims_a_l)
+np.savetxt('./output/sims_a_l.txt', sims_a_l)
 
 print("cmb_a_l: \n",cmb_a_l)
 print("sim_a_l: \n",np.mean(sims_a_l, axis=0))
+
+# matplotlib.use('Agg')
+# plt.plot(sampling_range, cmb_measure_results, '-k')
+# plt.plot(ext_range, sim_ext_results, '-r')
+# plt.savefig('./test2.pdf', transparent = True)

@@ -3,12 +3,17 @@ import numpy as np
 import concurrent.futures
 
 from .dtypes import pix_data
-from .math_utils import clamp
 
 def get_sampling_range(**kwargs):
     sampling_start, sampling_stop, nsamples = \
         kwargs['sampling_start'], kwargs['sampling_stop'], kwargs['nsamples']
     return np.linspace(sampling_start, sampling_stop, nsamples)
+
+def get_extended_range(sampling_range, new_start = 0, new_stop = 180):
+    new_len = new_stop - new_start
+    ext_nsamples = new_len/(np.max(sampling_range) - np.min(sampling_range)) * len(sampling_range)
+    ext_range = np.linspace(new_start, new_stop, int(ext_nsamples) )
+    return ext_range
 
 #----------- Parallel -----------
 def get_block(pdata:pix_data, block_size, block_num):
@@ -29,7 +34,7 @@ def two_blocks_correlation(data1:np.ndarray, pos1:np.ndarray,
         start = i if is_same else 0
         for j in range(start, len(data2)):
             cos_th = np.dot(pos1[i], pos2[j])
-            angle = np.arccos(clamp(cos_th))
+            angle = np.arccos(np.clip(cos_th, -1, 1))
             index = int(n_samples * angle / np.pi)
             corr_n[0, index] += data1[i] * data2[j]
             corr_n[1, index] += 1
@@ -78,8 +83,8 @@ def correlation(pdata:pix_data, n_samples = 180, mode = 'TT'):
         _pdata.data = _pdata.data - np.mean(_pdata.data)
     for i in prange(len(_pdata.data)):
         for j in prange(i, len(_pdata.data)):
-            _cos_th = np.dot(_pdata.pos[i], _pdata.pos[j])
-            angle = np.arccos(clamp(_cos_th))
+            cos_th = np.dot(_pdata.pos[i], _pdata.pos[j])
+            angle = np.arccos(np.clip(cos_th, -1, 1))
             index = int(n_samples * angle / np.pi)
             corr[index] += _pdata.data[i] * _pdata.data[j]
             count[index] += 1
