@@ -2,6 +2,7 @@ import pymaster
 import healpy as hp
 import numpy as np
 
+from . import math_utils as mu
 from . import map_reader
 
 def fill_temp_map_with_cap(nside, pole_lat, pole_lon, cap_size, fake_poles):
@@ -34,3 +35,10 @@ def fill_temp_map_with_cap(nside, pole_lat, pole_lon, cap_size, fake_poles):
 
 def read_inpainted_cl(filled_map, mask_map):
     pass
+
+def create_legendre_modulation_factor(pos_arr, a_l):
+        '''Generates the factor to be multiplied by map'''
+        # in legendre polynomials z = cos(theta) is used
+        z = pos_arr[:, 2]
+        legendre_on_pix = np.array([a_l[i] * mu.legendre(i, z) for i in range(1, len(a_l))])
+        return (1 + np.sum(legendre_on_pix, axis = 0))

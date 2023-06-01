@@ -16,7 +16,7 @@ sims_path           = './input/commander_sims/'
 json_params_file =  open(input_params_fpath,'r')
 inputs = json.loads(json_params_file.read())
 
-max_l = 6
+max_l = 10
 max_sim_num = 1000
 inputs['nside'] = 64
 
@@ -36,6 +36,8 @@ cmb_a_l = mu.get_legendre_modulation(ext_range * np.pi / 180, cmb_measure_result
 
 sims_a_l = []
 sim_pos = cau.map_reader.read_pos(inputs['nside'])
+modulation_factor = cau.map_filler.create_legendre_modulation_factor(sim_pos, cmb_a_l)
+
 _inputs = inputs.copy()
 _inputs['measure_flag'] = cau.const.MEAN_FLAG
 for i in range(max_sim_num):
@@ -47,7 +49,7 @@ for i in range(max_sim_num):
         continue
     sim_temp *= 10**6
     sim_pix_data        = cau.dtypes.pix_data(sim_temp, np.copy(sim_pos))
-    sim_pix_data.add_legendre_modulation(cmb_a_l)
+    sim_pix_data.data  *= modulation_factor
     sim_measure_results = cau.measure.get_stripe_anomaly(sim_pix_data , **inputs)
     sim_ext_results     = mu.extrapolate_curve(sampling_range, sim_measure_results, ext_range)
     _a_l                = mu.get_legendre_modulation(ext_range * np.pi / 180, sim_ext_results, max_l)
@@ -59,6 +61,7 @@ np.savetxt('./output/sims_a_l.txt', sims_a_l)
 
 print("cmb_a_l: \n",cmb_a_l)
 print("sim_a_l: \n",np.mean(sims_a_l, axis=0))
+print("sim_a_l_std: \n",np.std(sims_a_l, axis=0))
 
 # matplotlib.use('Agg')
 # plt.plot(sampling_range, cmb_measure_results, '-k')

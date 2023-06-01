@@ -5,6 +5,8 @@ import matplotlib
 from . import const
 
 def get_output_path(**kwargs):
+    '''inputs:\n
+    measure_flag - observable_flag - nside - is_masked - geom_flag - dtheta'''
     measure_flag = kwargs['measure_flag']
     output_fpath = "./output/"
     output_fpath += "{}".format(kwargs['observable_flag'])
@@ -40,15 +42,17 @@ def get_plot_fig(measure_result, **kwargs):
     matplotlib.use('Agg') # for writing to files only
     fig, ax = plt.subplots(1,1)
     fig.set_size_inches(8,5)
+    # axis numbers font size
+    ax.tick_params(axis='both', which='major', labelsize=14)
     # xlabel
     xlabel = get_xlabel_tex(**kwargs)
-    ax.set_xlabel(xlabel, fontsize=11)
+    ax.set_xlabel(xlabel, fontsize=16)
     # ylabel
     ylabel = get_ylabel_tex(**kwargs)
-    ax.set_ylabel(ylabel, fontsize=12)
-    title = get_plot_title(**kwargs)
+    ax.set_ylabel(ylabel, fontsize=18)
     # title
-    ax.set_title(title, fontsize = 12)
+    title = get_plot_title(**kwargs)
+    ax.set_title(title, fontsize = 20)
     # plot
     ax.plot(kwargs['sampling_range'], measure_result, '-k')
     return fig
