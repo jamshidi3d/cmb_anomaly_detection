@@ -15,3 +15,5 @@ P               = 'P'
 '''polarization strength which is equal to sqrt(U^2+Q^2)'''
 E_MODE          = 'E_MODE'
 B_MODE          = 'B_MODE'
+# parameters
+ANG_THRESHOLD   = 0.0001
