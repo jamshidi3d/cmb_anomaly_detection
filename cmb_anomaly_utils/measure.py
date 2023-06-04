@@ -68,10 +68,10 @@ def get_cap_anomaly(sky_pix:pix_data, **kwargs):
     measure_func = cap_func_dict[measure_flag]
     for i in range(len(cap_angles)):
         ca = _kwargs['cap_angle'] = cap_angles[i]
-        print("++ Cap of size {} degrees\r".format(ca), end = "")
+        # print("++ Cap of size {} degrees\r".format(ca), end = "")
         top, bottom = sky_pix.get_top_bottom_caps(ca)
         measure_results[i] = measure_func(top, bottom, **_kwargs)
-    print()
+    # print()
     return measure_results
 
 
@@ -138,10 +138,10 @@ def get_stripe_anomaly(sky_pix:pix_data, **kwargs):
     measure_func = stripe_func_dict[measure_flag]
     # measure
     for i in range(len(stripe_centers)):
-        print("++ Stripe center {} degrees".format(stripe_centers[i])+" " * 20+"\r", end="")
+        # print("++ Stripe center {} degrees".format(stripe_centers[i])+" " * 20+"\r", end="")
         start = stripe_starts[i]
         end = stripe_ends[i]
         stripe, rest_of_sky = sky_pix.get_stripe(start, end)
         measure_results[i] = measure_func(stripe, rest_of_sky, **_kwargs)
-    print()
+    # print()
     return measure_results

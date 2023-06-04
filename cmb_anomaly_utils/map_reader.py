@@ -49,7 +49,7 @@ def read_e_mode(fpath, nside):
 def read_b_mode(fpath, nside):
     pass
 
-def read_pos(nside = 64, pole_lat = 0, pole_lon = 0):
+def read_pos(nside = 64, pole_lat = 90, pole_lon = 0):
     npix     = np.arange(12 * nside **2)
     lon, lat = hp.pix2ang(nside, npix, lonlat = True)
     pos = coords.convert_polar_to_xyz(lat, lon)
