@@ -1,4 +1,4 @@
-import pymaster
+# import pymaster
 import healpy as hp
 import numpy as np
 
