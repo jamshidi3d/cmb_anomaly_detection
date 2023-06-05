@@ -17,3 +17,4 @@ E_MODE          = 'E_MODE'
 B_MODE          = 'B_MODE'
 # parameters
 ANG_THRESHOLD   = 0.0001
+THRESHOLD       = 0.0000001

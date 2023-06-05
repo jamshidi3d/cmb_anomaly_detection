@@ -3,6 +3,14 @@ import numpy as np
 import concurrent.futures
 
 from .dtypes import pix_data
+from . import const
+
+def clamp(x, x_min = -1, x_max = 1):
+    if x <= x_min:
+        return x_min + const.THRESHOLD
+    elif x >= x_max:
+        return x_max - const.THRESHOLD
+    return x
 
 def get_sampling_range(**kwargs):
     sampling_start, sampling_stop, nsamples = \
@@ -34,7 +42,7 @@ def two_blocks_correlation(data1:np.ndarray, pos1:np.ndarray,
         start = i if is_same else 0
         for j in range(start, len(data2)):
             cos_th = np.dot(pos1[i], pos2[j])
-            angle = np.arccos(np.clip(cos_th, -1, 1))
+            angle = np.arccos(clamp(cos_th, -1, 1))
             index = int(n_samples * angle / np.pi)
             corr_n[0, index] += data1[i] * data2[j]
             corr_n[1, index] += 1
@@ -84,7 +92,7 @@ def correlation(pdata:pix_data, n_samples = 180, mode = 'TT'):
     for i in prange(len(_pdata.data)):
         for j in prange(i, len(_pdata.data)):
             cos_th = np.dot(_pdata.pos[i], _pdata.pos[j])
-            angle = np.arccos(np.clip(cos_th, -1, 1))
+            angle = np.arccos(clamp(cos_th, -1, 1))
             index = int(n_samples * angle / np.pi)
             corr[index] += _pdata.data[i] * _pdata.data[j]
             count[index] += 1
