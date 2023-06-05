@@ -1,9 +1,9 @@
-from numba import njit, prange
 import numpy as np
 import concurrent.futures
 
 from .dtypes import pix_data
 from . import const
+
 
 def clamp(x, x_min = -1, x_max = 1):
     if x <= x_min:
@@ -31,7 +31,6 @@ def get_block(pdata:pix_data, block_size, block_num):
     _pos    = pdata.pos[start_i : end_i]
     return pix_data(_temp, _pos)
 
-@njit
 def two_blocks_correlation(data1:np.ndarray, pos1:np.ndarray,
                            data2:np.ndarray, pos2:np.ndarray,
                            n_samples:int,
@@ -82,15 +81,14 @@ def parallel_correlation(pdata:pix_data, **kwargs):
 
 
 #------------- Linear -------------
-@njit(fastmath = True)
 def correlation(pdata:pix_data, n_samples = 180, mode = 'TT'):
     _pdata = pdata.copy()
     corr = np.zeros(n_samples)
     count = np.zeros(n_samples, dtype = np.int_)
     if mode == 'TT':
         _pdata.data = _pdata.data - np.mean(_pdata.data)
-    for i in prange(len(_pdata.data)):
-        for j in prange(i, len(_pdata.data)):
+    for i in range(len(_pdata.data)):
+        for j in range(i, len(_pdata.data)):
             cos_th = np.dot(_pdata.pos[i], _pdata.pos[j])
             angle = np.arccos(clamp(cos_th, -1, 1))
             index = int(n_samples * angle / np.pi)
