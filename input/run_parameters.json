@@ -12,6 +12,6 @@
     "dtheta": 1,
     "_comment1": "this ratio is used for angle cutoff in calculatiing 2pcf",
     "cutoff_ratio": 0.6666666666666666,
-    "sampling_start": 0,
-    "sampling_stop": 180
+    "sampling_start": 10,
+    "sampling_stop": 90
 }
