@@ -1,10 +1,11 @@
 import numpy as np
 import concurrent.futures
+from numba import njit, prange
 
 from .dtypes import pix_data
 from . import const
 
-
+@njit(fastmath = True)
 def clamp(x, x_min = -1, x_max = 1):
     if x <= x_min:
         return x_min + const.THRESHOLD
@@ -23,14 +24,18 @@ def get_extended_range(sampling_range, new_start = 0, new_stop = 180):
     ext_range = np.linspace(new_start, new_stop, int(ext_nsamples) )
     return ext_range
 
+def get_nearest_index(arr, val):
+    return np.argmin(np.abs(arr - val))
+
 #----------- Parallel -----------
 def get_block(pdata:pix_data, block_size, block_num):
     start_i = block_num * block_size
     end_i   = (block_num + 1) * block_size
-    _temp   = pdata.data[start_i : end_i]
+    _data   = pdata.data[start_i : end_i]
     _pos    = pdata.pos[start_i : end_i]
-    return pix_data(_temp, _pos)
+    return _data, _pos
 
+@njit(fastmath = True)
 def two_blocks_correlation(data1:np.ndarray, pos1:np.ndarray,
                            data2:np.ndarray, pos2:np.ndarray,
                            n_samples:int,
@@ -41,7 +46,8 @@ def two_blocks_correlation(data1:np.ndarray, pos1:np.ndarray,
         start = i if is_same else 0
         for j in range(start, len(data2)):
             cos_th = np.dot(pos1[i], pos2[j])
-            angle = np.arccos(clamp(cos_th, -1, 1))
+            cos_th = clamp(cos_th, -1, 1)
+            angle = np.arccos(cos_th)
             index = int(n_samples * angle / np.pi)
             corr_n[0, index] += data1[i] * data2[j]
             corr_n[1, index] += 1
@@ -62,13 +68,13 @@ def parallel_correlation(pdata:pix_data, **kwargs):
         _pdata.data = _pdata.data - np.mean(_pdata.data)
     with concurrent.futures.ProcessPoolExecutor() as exec:
         for i in range(nblocks):
-            pd1 = get_block(_pdata, block_size, i)
+            data1, pos1 = get_block(_pdata, block_size, i)
             for j in range(i, nblocks):
-                pd2 = get_block(_pdata, block_size, j)
+                data2, pos2 = get_block(_pdata, block_size, j)
                 is_same = i==j
                 processes.append(\
                     exec.submit(\
-                        two_blocks_correlation, pd1.data, pd1.pos, pd2.data, pd2.pos, nsamples, is_same))
+                        two_blocks_correlation, data1, pos1, data2, pos2, nsamples, is_same))
                 # print("- Process for blocks \"{}\" and \"{}\" queued".format(i,j))
         results = np.array([proc.result() for proc in processes])
         corr_tilepair = results[:, 0]
@@ -90,7 +96,7 @@ def correlation(pdata:pix_data, n_samples = 180, mode = 'TT'):
     for i in range(len(_pdata.data)):
         for j in range(i, len(_pdata.data)):
             cos_th = np.dot(_pdata.pos[i], _pdata.pos[j])
-            angle = np.arccos(clamp(cos_th, -1, 1))
+            angle = np.arccos(np.clip(cos_th, -1, 1))
             index = int(n_samples * angle / np.pi)
             corr[index] += _pdata.data[i] * _pdata.data[j]
             count[index] += 1
