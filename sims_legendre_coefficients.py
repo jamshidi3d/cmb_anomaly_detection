@@ -5,16 +5,13 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 import cmb_anomaly_utils as cau
+import read_maps_params as rmp
 from cmb_anomaly_utils.dtypes import pix_data
 from cmb_anomaly_utils import math_utils as mu
 
-cmb_fpath           = "./input/cmb_fits_files/COM_CMB_IQU-commander_2048_R3.00_full.fits"
-mask_fpath          = "./input/cmb_fits_files/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
-input_params_fpath  = './input/run_parameters.json'
-sims_path           = './input/commander_sims/'
+sims_path = './input/commander_sims/'
 
-json_params_file =  open(input_params_fpath,'r')
-_inputs = json.loads(json_params_file.read())
+_inputs = rmp.get_inputs()
 
 max_l = 10
 max_sim_num = 1000
@@ -26,7 +23,7 @@ sampling_range = _inputs['sampling_range']
 ext_range = cau.stat_utils.get_extended_range(sampling_range, 0, 180)
 
 # take legendre expansion of cmb first
-cmb_pix_data        = cau.map_reader.get_data_pix_from_cmb(cmb_fpath, mask_fpath, **_inputs)
+cmb_pix_data        = rmp.get_cmb_pixdata()
 cmb_measure_results = cau.measure.get_stripe_anomaly(cmb_pix_data , **_inputs)
 # cmb_ext_results     = mu.extrapolate_curve(sampling_range, cmb_measure_results, ext_range, 'clamped', 0)
 

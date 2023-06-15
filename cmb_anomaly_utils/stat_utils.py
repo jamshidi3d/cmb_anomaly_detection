@@ -104,10 +104,17 @@ def correlation(pdata:pix_data, n_samples = 180, mode = 'TT'):
     return corr / count
 
 
+@njit(fastmath = True)
+def fast_std(arr):
+    return np.std(arr)
+
+@njit(fastmath = True)
+def fast_mean(arr):
+    return np.mean(arr)
 
 def std_pix_data(pdata:pix_data):
     _data = pdata.data
-    return np.std(_data)
+    return fast_std(_data)
 
 def mean_pix_data(pdata:pix_data):
     _data = pdata.data

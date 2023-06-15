@@ -1,34 +1,31 @@
 import numpy as np
 import healpy as hp
-import json
 
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 
+import read_maps_params as rmp
 import cmb_anomaly_utils as cau
 from cmb_anomaly_utils.dtypes import pix_data
 
-cmb_fpath           = "./input/cmb_fits_files/COM_CMB_IQU-commander_2048_R3.00_full.fits"
-mask_fpath          = "./input/cmb_fits_files/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
-input_params_fpath  = './input/run_parameters.json'
+_inputs = rmp.get_inputs()
 
-json_params_file =  open(input_params_fpath,'r')
-_inputs = json.loads(json_params_file.read())
-
-_inputs['pole_lat'] = 0
-_inputs['pole_lon'] = 0
-_inputs['geom_flag'] = cau.const.CAP_FLAG
+dir_nside                   = 8
+'''nside for different pole directions'''
+_inputs['nside']            = 64
+_inputs['pole_lat']         = 90
+_inputs['pole_lon']         = 0
+_inputs['measure_flag']     = cau.const.STD_FLAG
+_inputs['geom_flag']        = cau.const.CAP_FLAG
 _inputs['nsamples']         = _inputs['sampling_stop'] - _inputs['sampling_start'] + 1
 _inputs['sampling_range']   = cau.stat_utils.get_sampling_range(**_inputs)
 
-dir_nside = 16
-'''nside for different pole directions'''
-npix     = 12 * dir_nside **2
+npix     = 12 * dir_nside ** 2
 dir_lon, dir_lat = hp.pix2ang(dir_nside, np.arange(npix), lonlat = True)
 all_dir_anomaly = []
 
-cmb_pd : pix_data = cau.map_reader.get_data_pix_from_cmb(cmb_fpath, mask_fpath, **_inputs)
+cmb_pd : pix_data = rmp.get_cmb_pixdata(**_inputs)
 pix_pos = np.copy(cmb_pd.pos)
 for i in range(npix):
     print(f"{i}/{npix} \r", end="")

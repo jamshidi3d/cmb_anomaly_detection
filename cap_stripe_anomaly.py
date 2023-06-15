@@ -1,14 +1,7 @@
 import cmb_anomaly_utils as cau
-import json
+import read_maps_params as rmp
 
-
-cmb_fpath       = "./input/cmb_fits_files/COM_CMB_IQU-commander_2048_R3.00_full.fits"
-mask_fpath      = "./input/cmb_fits_files/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
-input_params_fpath    = './input/run_parameters.json'
-
-json_inputs_file =  open(input_params_fpath,'r')
-inputs = json.loads(json_inputs_file.read())
-json_inputs_file.close()
+inputs = rmp.get_inputs()
 # add sampling range
 inputs['sampling_range'] = cau.stat_utils.get_sampling_range(**inputs)
 
@@ -22,7 +15,7 @@ print("=> Observable: {} | Measure: {} | Nside: {} | MapType: {} | Geometry: {}"
         )
     )
 
-sky_pix = cau.map_reader.get_data_pix_from_cmb(cmb_fpath, mask_fpath, **inputs)
+sky_pix = rmp.get_cmb_pixdata()
 
 # Measure
 if inputs['geom_flag'] == cau.const.CAP_FLAG:
