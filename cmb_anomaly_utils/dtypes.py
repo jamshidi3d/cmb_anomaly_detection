@@ -6,19 +6,22 @@ from . import math_utils as mu
 
 
 class pix_data:
-    def __init__(self, data:np.ndarray, pos:np.ndarray, mask:np.ndarray = None):
+    def __init__(self, data:np.ndarray, pos:np.ndarray, raw_mask:np.ndarray = None):
         self.data = data
         self.pos = pos
-        self.mask = mask
+        self.raw_mask = raw_mask
+        _mask = np.logical_not(raw_mask)
+        # swapping ON and OFF, because _mask is true in masked areas and false in data area
+        self.screen = (_mask == False)
     
     def copy(self):
-        return pix_data(np.copy(self.data), np.copy(self.pos), np.copy(self.mask))
-
+        return pix_data(np.copy(self.data), np.copy(self.pos), np.copy(self.raw_mask))
+    
     def get_filtered(self, filter) -> "pix_data":
-        if self.mask is None:
+        if self.raw_mask is None:
             return pix_data(self.data[filter], self.pos[filter])
-        _mask = self.mask[filter]
-        return pix_data(self.data[filter][_mask], self.pos[filter][_mask])
+        screen_map = self.screen[filter]
+        return pix_data(self.data[filter][screen_map], self.pos[filter][screen_map])
 
     def get_top_bottom_caps(self, cap_angle):
         z_border = angle_to_z(cap_angle)

@@ -15,9 +15,6 @@ def get_sim_attr(sims_path, observable = const.T, num = 0):
 def read_mask(fpath, nside):
     mask = hp.read_map(fpath)
     mask = hp.ud_grade(mask, nside_out=nside)
-    mask = np.logical_not(mask)
-    # swapping ON and OFF, because sky_mask is true in masked areas and false in data area
-    mask = np.array([not off_pix for off_pix in mask])
     return mask
 
 def read_attr(fpath, nside, field):
@@ -70,5 +67,5 @@ def get_data_pix_from_cmb(data_fpath, mask_fpath, **kwargs):
     read_data = func_dict[observable_flag]
     _data = read_data(data_fpath, nside)
     _pos = read_pos(nside, pole_lat, pole_lon)
-    _mask = read_mask(mask_fpath) if is_masked else None
+    _mask = read_mask(mask_fpath, nside) if is_masked else None
     return pix_data(_data, _pos, _mask)
