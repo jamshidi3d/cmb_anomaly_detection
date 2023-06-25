@@ -31,7 +31,7 @@ cmb_measure_results = cau.measure.get_stripe_anomaly(cmb_pix_data , **_inputs)
 _inputs['measure_flag'] = cau.const.CORR_FLAG
 
 # convert degree to radians to compute legendre coeffs
-cmb_a_l = mu.get_legendre_modulation(ext_range * np.pi / 180, cmb_measure_results, max_l)
+cmb_a_l = mu.get_all_legendre_modulation(ext_range * np.pi / 180, cmb_measure_results, max_l)
 
 sims_a_l = []
 sims_results = []

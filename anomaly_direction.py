@@ -11,7 +11,7 @@ from cmb_anomaly_utils.dtypes import pix_data
 
 _inputs = rmp.get_inputs()
 
-dir_nside                   = 8
+dir_nside                   = 16
 '''nside for different pole directions'''
 _inputs['nside']            = 64
 _inputs['pole_lat']         = 90

@@ -1,6 +1,12 @@
 import numpy as np
 from scipy.interpolate import CubicSpline
 
+def integrate_curve(x, y):
+    dx = x[1:] - x[:-1]
+    mean_y = 0.5 * (y[1:] + y[:-1])
+    return np.sum(mean_y * dx)
+
+#--------------legendre utils----------------
 
 def legendre(n, x):
     '''Legendre Polynomials'''
@@ -11,22 +17,27 @@ def legendre(n, x):
     else:
         return (((2*n)-1) * x * legendre(n-1, x) - (n-1) * legendre(n-2, x)) / float(n)
 
-def integrate_curve(x, y):
-    dx = x[1:] - x[:-1]
-    mean_y = 0.5 * (y[1:] + y[:-1])
-    return np.sum(mean_y * dx)
+def get_single_legendre_coef(theta, y, l):
+    return (2*l + 1)/2 * integrate_curve(theta, y * np.sin(theta) * legendre(l, np.cos(theta)))
 
-def get_legendre_coefficients(theta, y, max_l):
+def get_all_legendre_coefs(theta, y, max_l):
     '''theta has to be in radians'''
     a_l = np.zeros(max_l + 1)
     for l in range(0, max_l + 1):
-        a_l[l] = (2*l + 1)/2 * integrate_curve(theta, y * np.sin(theta) * legendre(l, np.cos(theta)))
+        a_l[l] = get_single_legendre_coef(theta, y, l)
     return a_l
 
-def get_legendre_modulation(theta, y, max_l):
+def get_single_legendre_modulation(theta, y, l):
     y_mean = np.mean(y)
     y_mod = y if y_mean == 0 else y / y_mean
-    return get_legendre_coefficients(theta, y_mod, max_l)
+    return get_single_legendre_coef(theta, y_mod, l)
+
+def get_all_legendre_modulation(theta, y, max_l):
+    y_mean = np.mean(y)
+    y_mod = y if y_mean == 0 else y / y_mean
+    return get_all_legendre_coefs(theta, y_mod, max_l)
+
+#--------------extrapolation----------------
 
 def extrapolate_curve(x, y, extended_x, curve_type='clamped', deriv=0):
     '''gives extrapolated y-values\n
