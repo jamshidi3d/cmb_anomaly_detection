@@ -16,54 +16,58 @@ _inputs = rmp.get_inputs()
 max_l = 10
 max_sim_num = 1000
 _inputs['nside'] = 64
+_inputs['sampling_start'] = 0
+_inputs['sampling_stop'] = 180
+_inputs['measure_flag'] = cau.const.STD_FLAG
 
 # modify sampling range to extrapolate curves
 _inputs['sampling_range'] = cau.stat_utils.get_sampling_range(**_inputs)
 sampling_range = _inputs['sampling_range']
-ext_range = cau.stat_utils.get_extended_range(sampling_range, 0, 180)
 
 # take legendre expansion of cmb first
-cmb_pix_data        = rmp.get_cmb_pixdata()
-cmb_measure_results = cau.measure.get_stripe_anomaly(cmb_pix_data , **_inputs)
-# cmb_ext_results     = mu.extrapolate_curve(sampling_range, cmb_measure_results, ext_range, 'clamped', 0)
-
-# change probe after modulation
-_inputs['measure_flag'] = cau.const.CORR_FLAG
+cmb_pix_data        = rmp.get_cmb_pixdata(**_inputs)
+cmb_measure_results = cau.measure.get_strip_anomaly(cmb_pix_data , **_inputs)
 
 # convert degree to radians to compute legendre coeffs
-cmb_a_l = mu.get_all_legendre_modulation(ext_range * np.pi / 180, cmb_measure_results, max_l)
+cmb_a_l = mu.get_all_legendre_modulation(sampling_range * np.pi / 180, cmb_measure_results, max_l)
+np.savetxt('./output/cmb_a_l.txt', cmb_a_l)
 
-sims_a_l = []
-sims_results = []
+# change probe after modulation
+_inputs['measure_flag'] = cau.const.STD_FLAG
+
+sims_a_l        = np.zeros((max_sim_num, max_l + 1))
+sims_results    = np.zeros((max_sim_num, len(sampling_range)))
 sim_pos = cau.map_reader.read_pos(_inputs['nside'])
-modulation_factor = cau.map_filler.create_legendre_modulation_factor(sim_pos, cmb_a_l)
 
-_inputs = _inputs.copy()
-_inputs['measure_flag'] = cau.const.MEAN_FLAG
-for i in range(max_sim_num):
-    print(f'sim number {i:04}')
-    try:
-        sim_temp = cau.map_reader.get_sim_attr(sims_path, 'T', i)
-    except:
-        print("simulation number {:05} is currupted!".format(i))
-        continue
-    sim_temp *= 10**6
-    sim_pix_data        = cau.dtypes.pix_data(sim_temp, np.copy(sim_pos))
-    sim_pix_data.data  *= modulation_factor
-    sim_measure_results = cau.measure.get_stripe_anomaly(sim_pix_data , **_inputs)
-    sim_ext_results     = mu.extrapolate_curve(sampling_range, sim_measure_results, ext_range)
-    sims_results.append(sim_ext_results)
-    # _a_l                = mu.get_legendre_modulation(ext_range * np.pi / 180, sim_ext_results, max_l)
-    # sims_a_l.append(_a_l)
+# modulate for each l separately
+for nonzero_l in range(max_l + 1):
+    print(nonzero_l)
+    single_cmb_a_l = np.copy(cmb_a_l)
+    single_cmb_a_l[:nonzero_l] = 0
+    single_cmb_a_l[nonzero_l + 1:] = 0
 
-# convert to numpy array
-sims_results = np.array(sims_results)
-np.savetxt('./output/sims_{}.txt'.format(input['measure_flag']), sims_results)
+    modulation_factor = cau.map_filler.create_legendre_modulation_factor(sim_pos, single_cmb_a_l)
+
+    for sim_num in range(max_sim_num):
+        print(f'sim number {sim_num:04} \r', end='')
+        try:
+            sim_temp = cau.map_reader.get_sim_attr(sims_path, 'T', sim_num)
+        except:
+            print("simulation number {:05} is currupted!".format(sim_num))
+            continue
+        sim_temp *= 10**6
+        sim_pix_data        = cau.dtypes.pix_data(sim_temp, np.copy(sim_pos))
+        sim_pix_data.data  *= modulation_factor
+        sim_measure_results = cau.measure.get_strip_anomaly(sim_pix_data , **_inputs)
+        s_a_l = mu.get_single_legendre_modulation(sampling_range * np.pi / 180, sim_measure_results, nonzero_l)
+        sims_a_l[sim_num, nonzero_l] = s_a_l
+        sims_results[sim_num] = sim_measure_results
+        # del sim_pix_data
 
 
-# convert to numpy array
-# sims_a_l = np.array(sims_a_l)
-# np.savetxt('./output/sims_a_l.txt', sims_a_l)
+# store data
+np.savetxt('./output/sims_a_l.txt', sims_a_l)
+np.savetxt('./output/sims_{}.txt'.format(_inputs['measure_flag']), sims_results)
 
 # print("cmb_a_l: \n",cmb_a_l)
 # print("sim_a_l: \n",np.mean(sims_a_l, axis=0))

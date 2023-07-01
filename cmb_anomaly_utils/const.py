@@ -1,6 +1,6 @@
 # grometry flags
 CAP_FLAG        = 'CAP'
-STRIPE_FLAG     = 'STRIPE'
+STRIP_FLAG     = 'STRIP'
 # measure flags
 D_CORR2_FLAG    = 'D_CORR_2'
 D_STD2_FLAG     = 'D_STD_2'

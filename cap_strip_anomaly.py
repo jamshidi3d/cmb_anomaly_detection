@@ -20,8 +20,8 @@ sky_pix = rmp.get_cmb_pixdata()
 # Measure
 if inputs['geom_flag'] == cau.const.CAP_FLAG:
     measure_results = cau.measure.get_cap_anomaly(sky_pix, **inputs)
-elif inputs['geom_flag'] == cau.const.STRIPE_FLAG:
-    measure_results = cau.measure.get_stripe_anomaly(sky_pix, **inputs)
+elif inputs['geom_flag'] == cau.const.STRIP_FLAG:
+    measure_results = cau.measure.get_strip_anomaly(sky_pix, **inputs)
 else:
     raise ValueError("Geometry flag is not set correctly")
 

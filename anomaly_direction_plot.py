@@ -9,12 +9,12 @@ import read_maps_params as rmp
 
 _inputs = rmp.get_inputs()
 
+img_dpi                 = 150
 _inputs['geom_flag']    = cau.const.CAP_FLAG
-_inputs['nsamples']     = _inputs['sampling_stop'] - _inputs['sampling_start'] + 1
+_inputs['nsamples']     = 1 + int((_inputs['sampling_stop'] - _inputs['sampling_start']) / 2)
 sampling_range          = cau.stat_utils.get_sampling_range(**_inputs)
 
-
-all_dir_anomaly = np.loadtxt("./output/direction_data.txt")
+all_dir_anomaly = np.loadtxt("./output/cmb_all_dir_anomaly.txt")
 
 dir_nside = 16
 '''nside for different pole directions'''
@@ -46,10 +46,11 @@ def colorize_special_pix(arr, index, factor = 0.25, from_min = True):
 dir_pref = np.zeros(npix)
 akrami_pix_index = hp.ang2pix(dir_nside, np.deg2rad(110), np.deg2rad(221))
 
-for cap_size in range(10, 91, 1):
+for cap_index, cap_size in enumerate(sampling_range):
     fig, ax = plt.subplots()
+    # fig.set_size_inches(10,8)
     plt.axes(ax)
-    cap_index = cau.stat_utils.get_nearest_index(sampling_range, cap_size)
+    # cap_index = cau.stat_utils.get_nearest_index(sampling_range, cap_size)
     anom_arr = all_dir_anomaly[:, cap_index]
     dir_index = np.argmax(anom_arr)
     _title = r"$cap size = {}^\circ , lat|_{{max}} = {:0.1f}, lon|_{{max}} = {:0.1f}$".format(
@@ -57,19 +58,20 @@ for cap_size in range(10, 91, 1):
         dir_lat[dir_index],
         dir_lon[dir_index]
         )
-    f_anom_arr = flatten_low_values_with_std(anom_arr, nsigma = 1, flat_val = 0)
+    f_anom_arr = anom_arr #flatten_low_values_with_std(anom_arr, nsigma = 1, flat_val = 0)
     plot_f_anom_arr = colorize_special_pix(f_anom_arr, akrami_pix_index, factor = 0.4, from_min = True)
-    hp.mollview(plot_f_anom_arr, title = _title, hold=True)
-    fig.savefig(f"./output/dir_{cap_size}.jpg", transparent=True)
+    hp.mollview(plot_f_anom_arr, title = _title, xsize = 1600, hold=True)
+    fig.savefig(f"./output/dir_{int(cap_size)}.jpg", transparent=True, dpi=img_dpi)
     plt.close(fig)
     dir_pref += f_anom_arr
 
-dir_pref = flatten_low_values_with_std(dir_pref, nsigma = 1, flat_val = 0)
+# dir_pref = flatten_low_values_with_std(dir_pref, nsigma = 1, flat_val = np.min(dir_pref))
+dir_pref = flatten_low_values_with_precent(dir_pref, top_percent= 10, flat_val = np.min(dir_pref))
 dir_pref = colorize_special_pix(dir_pref, akrami_pix_index, factor = 0.4, from_min = True)
 fig, ax = plt.subplots()
 plt.axes(ax)
-_title = "Direction Preference Factor"
+_title = "Direction of Anomaly"
 np.savetxt("./output/dir_preference.txt", dir_pref)
-hp.mollview(dir_pref, title = _title, hold=True)
-fig.savefig("./output/dir_preference.png", transparent=True)
+hp.mollview(dir_pref, title = _title, xsize = 1600, hold=True)
+fig.savefig("./output/dir_preference.png", transparent=True, dpi=img_dpi)
 

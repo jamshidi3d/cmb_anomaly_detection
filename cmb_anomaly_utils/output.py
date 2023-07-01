@@ -12,7 +12,7 @@ def get_output_path(**kwargs):
     output_fpath += "{}".format(kwargs['observable_flag'])
     output_fpath += "_{}".format(kwargs['nside'])
     output_fpath += "_{}".format("masked" if kwargs['is_masked'] else "inpainted")
-    output_fpath += "_{}".format("cap" if kwargs['geom_flag'] == const.CAP_FLAG else "{}stripe".format(kwargs['stripe_thickness']))
+    output_fpath += "_{}".format("cap" if kwargs['geom_flag'] == const.CAP_FLAG else "{}strip".format(kwargs['strip_thickness']))
     output_fpath += "_{}".format("dcorr2" if measure_flag == const.D_CORR2_FLAG else \
                                 "dstd2" if measure_flag == const.D_STD2_FLAG else \
                                 "std" if measure_flag == const.STD_FLAG else \
@@ -64,23 +64,23 @@ def get_measure_tex(**kwargs):
     # TeX style titles
     if kwargs['measure_flag'] == const.D_CORR2_FLAG:
         captitle = r'$\int [C_{double_obs}^{{top}}(\gamma) - C_{double_obs}^{{bottom}}(\gamma)]^2 d\gamma$'.format(double_obs = double_obs)
-        strtitle = r'$\int [C_{double_obs}^{{stripe}}(\gamma) - C_{double_obs}^{{rest\,of\,sky}}(\gamma)]^2 d\gamma$'.format(double_obs = double_obs)
+        strtitle = r'$\int [C_{double_obs}^{{strip}}(\gamma) - C_{double_obs}^{{rest\,of\,sky}}(\gamma)]^2 d\gamma$'.format(double_obs = double_obs)
     elif measure_flag == const.CORR_FLAG:
         captitle = r'$\frac {{ \int [C_{double_obs}^{{top}}(\gamma)]^2 d\gamma }} {{ \int [C_{double_obs}^{{total}}(\gamma)]^2 d\gamma }}  - 1$'.format(double_obs = double_obs)
-        strtitle = r'$\frac {{ \int [C_{double_obs}^{{stripe}}(\gamma)]^2 d\gamma }} {{ \int [C_{double_obs}^{{total}}(\gamma)]^2 d\gamma }} - 1$'.format(double_obs = double_obs)
+        strtitle = r'$\frac {{ \int [C_{double_obs}^{{strip}}(\gamma)]^2 d\gamma }} {{ \int [C_{double_obs}^{{total}}(\gamma)]^2 d\gamma }} - 1$'.format(double_obs = double_obs)
     elif measure_flag == const.D_STD2_FLAG:
         captitle = r'$[\sigma_{{top}}({obs}) - \sigma_{{bottom}}({obs})]^2$'.format(obs = obs)
-        strtitle = r'$[\sigma_{{stripe}}({obs}) - \sigma_{{rest\,of\,sky}}({obs})]^2$'.format(obs = obs)
+        strtitle = r'$[\sigma_{{strip}}({obs}) - \sigma_{{rest\,of\,sky}}({obs})]^2$'.format(obs = obs)
     elif measure_flag == const.STD_FLAG:
         captitle = r'$\sigma_{{top}}({obs})$'.format(obs = obs)
-        strtitle = r'$\sigma_{{stripe}}({obs})$'.format(obs = obs)
+        strtitle = r'$\sigma_{{strip}}({obs})$'.format(obs = obs)
     elif measure_flag == const.MEAN_FLAG:
         captitle = r'$<{obs}>_{{top}}$'.format(obs = obs)
-        strtitle = r'$<{obs}>_{{stripe}}$'.format(obs = obs)
+        strtitle = r'$<{obs}>_{{strip}}$'.format(obs = obs)
     # returns
     if geom_flag == const.CAP_FLAG:
         return captitle
-    elif geom_flag == const.STRIPE_FLAG:
+    elif geom_flag == const.STRIP_FLAG:
         return strtitle
 
 def get_xlabel_tex(**kwargs):

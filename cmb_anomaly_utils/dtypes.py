@@ -33,16 +33,16 @@ class pix_data:
         bottom_cap = self.get_filtered(bottom_filter)
         return top_cap, bottom_cap
 
-    def get_stripe(self, start_angle, stop_angle):
-        '''returns a stripe between given angles and the rest of sky\n
+    def get_strip(self, start_angle, stop_angle):
+        '''returns a strip between given angles and the rest of sky\n
         start and stop angles have to be in degrees'''
         z_start = angle_to_z(start_angle)
         z_stop  = angle_to_z(stop_angle)
-        stripe_filter = (z_start >= self.pos[:, 2]) * (self.pos[:, 2] >= z_stop)
-        stripe = self.get_filtered(stripe_filter)
-        rest_of_sky_filter = np.array([not i for i in stripe_filter])
+        strip_filter = (z_start >= self.pos[:, 2]) * (self.pos[:, 2] >= z_stop)
+        strip = self.get_filtered(strip_filter)
+        rest_of_sky_filter = np.array([not i for i in strip_filter])
         rest_of_sky = self.get_filtered(rest_of_sky_filter)
-        return stripe, rest_of_sky
+        return strip, rest_of_sky
     
     def add_legendre_modulation(self, a_l):
         # in legendre polynomials z = cos(theta) is used
