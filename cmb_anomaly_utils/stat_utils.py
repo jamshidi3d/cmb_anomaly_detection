@@ -24,7 +24,7 @@ def get_extended_range(sampling_range, new_start = 0, new_stop = 180):
     ext_range = np.linspace(new_start, new_stop, int(ext_nsamples) )
     return ext_range
 
-def get_nearest_index(arr, val):
+def find_nearest_index(arr, val):
     return np.argmin(np.abs(arr - val))
 
 #----------- Parallel -----------

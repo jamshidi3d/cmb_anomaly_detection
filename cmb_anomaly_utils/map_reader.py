@@ -10,7 +10,7 @@ fname_dict = {const.T: 'temp'}
 def get_sim_attr(sims_path, observable = const.T, num = 0):
     fname = sims_path + "sim{:05}_".format(num) + fname_dict[observable] +'.txt'
     attr_list = np.loadtxt(fname)
-    return attr_list
+    return attr_list * 10**6
 
 def read_mask(fpath, nside):
     mask = hp.read_map(fpath)

@@ -1,10 +1,15 @@
+#
+#
+# This script fills the map with a given cap (with other areas considered as masked) and 
+# finds psuedo-Cls of it
+#
 import numpy as np
 import healpy as hp
 import pymaster as nmt
 import astropy.units as units
 
 import cmb_anomaly_utils as cau
-import read_maps_params as rmp
+import read_cmb_maps_params as rmp
 
 _inputs = rmp.get_inputs()
 
@@ -55,7 +60,7 @@ print('Applying beam')
 w_ell = hp.gauss_beam((5*units.arcmin).to_value(units.radian), lmax = ell_arr[-1])
 # select the correct w_ell for each ell
 all_ells = np.arange(len(w_ell))
-nearest_index = cau.stat_utils.get_nearest_index
+nearest_index = cau.stat_utils.find_nearest_index
 w_ell = np.array([w_ell[nearest_index(all_ells, ell)] for ell in ell_arr])
 sky_fraction = 1 #(len(temp_map) - np.sum(mask_map)) / len(temp_map)
 cl = cl_00[0] / sky_fraction / w_ell**2

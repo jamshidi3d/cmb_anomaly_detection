@@ -1,5 +1,11 @@
+#
+#
+# This script simply computes the measure for given run parameters and plots them
+#
+#
+
 import cmb_anomaly_utils as cau
-import read_maps_params as rmp
+import read_cmb_maps_params as rmp
 
 inputs = rmp.get_inputs()
 # add sampling range

@@ -2,7 +2,7 @@ import numpy as np
 
 from .dtypes import pix_data
 
-from . import const, stat_utils as su
+from . import const, stat_utils as su, coords
 
 def get_corr_full_integral(sky_pix:pix_data, **kwargs):
     '''full integral of 2pcf for later use\n
@@ -14,6 +14,18 @@ def get_corr_full_integral(sky_pix:pix_data, **kwargs):
         fullsky_corr = su.parallel_correlation(sky_pix, **kwargs)
         full_int = np.sum(fullsky_corr ** 2)
     return full_int
+
+def calc_cap_anomaly_in_all_dir(cmb_pd: pix_data, dir_lat_arr, dir_lon_arr, **_inputs):
+    ndir        = len(dir_lat_arr)
+    nsamples    = _inputs['nsamples']
+    all_dir_anomaly = np.zeros((ndir, nsamples))
+    pix_pos     = np.copy(cmb_pd.pos)
+    for i in range(ndir):
+        print(f"{i}/{ndir - 1} \r", end="")
+        cmb_pd.pos = coords.rotate_pole_to_north(pix_pos, dir_lat_arr[i], dir_lon_arr[i])
+        _result = get_cap_anomaly(cmb_pd, **_inputs)
+        all_dir_anomaly[i] = _result
+    return all_dir_anomaly
 
 #------------ Cap functions ------------
 def get_cap_dcorr2(top:pix_data, bottom:pix_data, **kwargs):
@@ -140,7 +152,7 @@ def get_strip_anomaly(sky_pix:pix_data, **kwargs):
     for i in range(len(strip_centers)):
         # print("++ Stripe center {} degrees".format(strip_centers[i])+" " * 20+"\r", end="")
         start = strip_starts[i]
-        end = strip_ends[i]
+        end   = strip_ends[i]
         strip, rest_of_sky = sky_pix.get_strip(start, end)
         measure_results[i] = measure_func(strip, rest_of_sky, **_kwargs)
     # print()

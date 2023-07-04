@@ -21,7 +21,8 @@ def get_single_legendre_coef(theta, y, l):
     return (2*l + 1)/2 * integrate_curve(theta, y * np.sin(theta) * legendre(l, np.cos(theta)))
 
 def get_all_legendre_coefs(theta, y, max_l):
-    '''theta has to be in radians'''
+    '''theta has to be in radians \n
+    output is of size (max_l + 1)'''
     a_l = np.zeros(max_l + 1)
     for l in range(0, max_l + 1):
         a_l[l] = get_single_legendre_coef(theta, y, l)
