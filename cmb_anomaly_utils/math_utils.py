@@ -9,13 +9,14 @@ def integrate_curve(x, y):
 #--------------legendre utils----------------
 
 def legendre(n, x):
-    '''Legendre Polynomials'''
-    if(n == 0): # P0 = 1
-        return np.ones(len(x)) if type(x) == np.ndarray else 1 
-    elif(n == 1): # P1 = x
-        return x
-    else:
-        return (((2*n)-1) * x * legendre(n-1, x) - (n-1) * legendre(n-2, x)) / float(n)
+    return np.polynomial.Legendre.basis(n)(x)
+    # '''Legendre Polynomials'''
+    # if(n == 0): # P0 = 1
+    #     return np.ones(len(x)) if type(x) == np.ndarray else 1 
+    # elif(n == 1): # P1 = x
+    #     return x
+    # else:
+    #     return (((2*n)-1) * x * legendre(n-1, x) - (n-1) * legendre(n-2, x)) / float(n)
 
 def get_single_legendre_coef(theta, y, l):
     return (2*l + 1)/2 * integrate_curve(theta, y * np.sin(theta) * legendre(l, np.cos(theta)))

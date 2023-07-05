@@ -1,7 +1,7 @@
 #
 #
 # This script computes the internal legendre coefficients of measure, computed
-# on strips in the MostAnomalyDirection(MAD).
+# on strips in the MostAnomalousDirection(MAD).
 # It is useful for computing p-values 
 #
 import os
@@ -63,6 +63,6 @@ for sim_num, fname in enumerate(file_list):
     sim_temp -= np.mean(sim_temp)
     sim_pix_data = cau.dtypes.pix_data(sim_temp, mad_aligned_pos)
     _result = cau.measure.get_strip_anomaly(sim_pix_data, **_inputs)
-    sims_a_l[sim_num] = cau.math_utils.get_all_legendre_coefs(theta, _result, max_l)
+    sims_a_l[sim_num] = cau.math_utils.get_all_legendre_modulation(theta, _result, max_l)
 
 np.savetxt('./output/sims_internal_a_l.txt', sims_a_l)
