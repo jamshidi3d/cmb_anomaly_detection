@@ -24,15 +24,17 @@ _inputs['pole_lat']         = 90
 _inputs['pole_lon']         = 0
 _inputs['measure_flag']     = cau.const.STD_FLAG
 _inputs['geom_flag']        = cau.const.STRIP_FLAG
-_inputs['sampling_start']   = 0
-_inputs['sampling_stop']    = 180
-_inputs['nsamples']         = 1 + 30
-_inputs['sampling_range']   = cau.stat_utils.get_sampling_range(**_inputs)
+_inputs['geom_start']       = 10
+_inputs['geom_stop']        = 90
+_inputs['ngeom_samples']    = 1 + int((_inputs['geom_stop'] - _inputs['geom_start']) / 2) 
+_inputs['measure_start']    = 0
+_inputs['measure_stop']     = 180
+_inputs['nmeasure_samples'] = 1+180
+_inputs['measure_range']    = cau.stat_utils.get_measure_range(**_inputs)
+_inputs['geom_range']    = cau.stat_utils.get_geom_range(**_inputs)
 
-theta = _inputs['sampling_range'] * np.pi / 180
-
-cap_nsamples    = 1 + int((90 - 10) / 2)
-cap_size_range  = cau.stat_utils.get_sampling_range(**{'sampling_start': 0, 'sampling_stop': 90, 'nsamples': cap_nsamples})
+geom_range  = _inputs['geom_range']
+theta       = _inputs['measure_range'] * np.pi / 180
 
 # all directions that we look for
 npix     = 12 * dir_nside ** 2
@@ -43,7 +45,7 @@ dir_lat *= 180 / np.pi
 file_list   = os.listdir(sims_anom_path)
 sim_pos     = cau.map_reader.read_pos(_inputs['nside'])
 sims_a_l    = np.zeros((max_sim_num, max_l + 1))
-cap_index   = cau.stat_utils.find_nearest_index(cap_size_range, selected_size_for_dir)
+cap_index   = cau.stat_utils.find_nearest_index(geom_range, selected_size_for_dir)
 # find mad & read legendre coefs
 for sim_num, fname in enumerate(file_list):
     print(f"{sim_num}/{max_sim_num - 1}\r", end='')
@@ -62,7 +64,7 @@ for sim_num, fname in enumerate(file_list):
         continue
     sim_temp -= np.mean(sim_temp)
     sim_pix_data = cau.dtypes.pix_data(sim_temp, mad_aligned_pos)
-    _result = cau.measure.get_strip_anomaly(sim_pix_data, **_inputs)
+    _result = cau.measure.get_strip_measure(sim_pix_data, **_inputs)
     sims_a_l[sim_num] = cau.math_utils.get_all_legendre_modulation(theta, _result, max_l)
 
 np.savetxt('./output/sims_internal_a_l.txt', sims_a_l)

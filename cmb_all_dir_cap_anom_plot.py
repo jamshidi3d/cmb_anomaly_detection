@@ -14,16 +14,20 @@ import read_cmb_maps_params as rmp
 
 _inputs = rmp.get_inputs()
 
-img_dpi                 = 150
-_inputs['geom_flag']    = cau.const.CAP_FLAG
-_inputs['nsamples']     = 1 + int((_inputs['sampling_stop'] - _inputs['sampling_start']) / 2)
-sampling_range          = cau.stat_utils.get_sampling_range(**_inputs)
+img_dpi                     = 150
+dir_nside                   = 16
+# map params
+_inputs['nside']            = 64
+_inputs['geom_flag']        = cau.const.CAP_FLAG
+_inputs['geom_start']       = 10
+_inputs['geom_stop']        = 90
+_inputs['ngeom_samples']    = 1 + int((_inputs['geom_stop'] - _inputs['geom_start']) / 2)
+geom_range                  = cau.stat_utils.get_measure_range(**_inputs)
 
-all_dir_anomaly = np.loadtxt("./output/cmb_all_dir_anomaly.txt")
+all_dir_anomaly  = np.loadtxt("./output/cmb_all_dir_anomaly.txt")
 
-dir_nside = 16
 '''nside for different pole directions'''
-npix     = 12 * dir_nside ** 2
+npix             = 12 * dir_nside ** 2
 dir_lon, dir_lat = hp.pix2ang(dir_nside, np.arange(npix), lonlat = True)
 
 def flatten_low_values_with_std(arr, nsigma = 1, flat_val = 0):
@@ -51,7 +55,7 @@ def colorize_special_pix(arr, index, factor = 0.25, from_min = True):
 dir_pref = np.zeros(npix)
 akrami_pix_index = hp.ang2pix(dir_nside, np.deg2rad(110), np.deg2rad(221))
 
-for cap_index, cap_size in enumerate(sampling_range):
+for cap_index, cap_size in enumerate(geom_range):
     fig, ax = plt.subplots()
     plt.axes(ax)
     anom_arr = all_dir_anomaly[:, cap_index]

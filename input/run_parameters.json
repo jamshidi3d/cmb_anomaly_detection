@@ -1,17 +1,20 @@
 {
     "observable_flag": "T",
+    "2pcf_mode": "TT",
     "nside": 64,
     "pole_lat": -20,
     "pole_lon": 221,
     "is_masked": false,
     "measure_flag": "STD",
     "geom_flag": "STRIP",
-    "nsamples": 192,
-    "nblocks": 4,
-    "strip_thickness": 20,
-    "dtheta": 1,
+    "measure_start": 0,
+    "measure_stop": 180,
+    "nmeasure_samples": 181,
     "_comment1": "this ratio is used for angle cutoff in calculatiing 2pcf",
-    "cutoff_ratio": 0.6666666666666666,
-    "sampling_start": 0,
-    "sampling_stop": 180
+    "cutoff_ratio": 0.6666666666,
+    "ndata_chunks": 4,
+    "geom_start": 0,
+    "geom_stop": 180,
+    "ngeom_samples": 181,
+    "strip_thickness": 20
 }

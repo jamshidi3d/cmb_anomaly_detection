@@ -44,7 +44,7 @@ _inputs['sampling_stop']    = 180
 _inputs['nsamples']         = 1 + 180
 _inputs['measure_flag']     = cau.const.STD_FLAG
 _inputs['geom_flag']        = cau.const.STRIP_FLAG
-_inputs['sampling_range']   = cau.stat_utils.get_sampling_range(**_inputs)
+_inputs['sampling_range']   = cau.stat_utils.get_measure_range(**_inputs)
 
 sampling_range = _inputs['sampling_range']
 
@@ -57,13 +57,13 @@ def get_modulated_measure_from_sim(sim_num, modulation_factor):
         return None
     sim_pix_data        = cau.dtypes.pix_data(sim_temp, np.copy(sim_pos))
     sim_pix_data.data  *= modulation_factor
-    sim_measure_results = cau.measure.get_strip_anomaly(sim_pix_data , **_inputs)
+    sim_measure_results = cau.measure.get_strip_measure(sim_pix_data , **_inputs)
     return sim_measure_results
 
 
 # take legendre expansion of cmb first
 cmb_pix_data        = rmp.get_cmb_pixdata(**_inputs)
-cmb_measure_results = cau.measure.get_strip_anomaly(cmb_pix_data , **_inputs)
+cmb_measure_results = cau.measure.get_strip_measure(cmb_pix_data , **_inputs)
 
 # convert degree to radians to compute legendre coeffs
 cmb_a_l = mu.get_all_legendre_modulation(sampling_range * np.pi / 180, cmb_measure_results, max_l)
@@ -108,4 +108,4 @@ if mod_mode == ALL_L_MODE:
         sims_results[sim_num] = sim_measure_results
     print()
 
-    np.savetxt('./output/sims_modulated_{}.txt'.format(_inputs['measure_flag']), sims_results)
+    np.savetxt('./output/sims_modulated_{}.txt'.format(_inputs['measure_flag'].lower()), sims_results)

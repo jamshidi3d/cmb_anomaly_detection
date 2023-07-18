@@ -17,15 +17,15 @@ def get_output_path(**kwargs):
                                 "dstd2" if measure_flag == const.D_STD2_FLAG else \
                                 "std" if measure_flag == const.STD_FLAG else \
                                 "corr" if measure_flag == const.CORR_FLAG else "mean")
-    output_fpath += "_{}dtheta".format(kwargs['dtheta'])
+    # output_fpath += "_{}dtheta".format(kwargs['dtheta'])
     return output_fpath
 
 
 def save_data_to_txt(measure_result, **kwargs):
     output_fpath = get_output_path(**kwargs)
-    fname = output_fpath + "_sampling_range" + ".txt"
+    fname = output_fpath + "_measure_range" + ".txt"
     with open(fname, "w") as file:
-        np.savetxt(file, kwargs['sampling_range'])
+        np.savetxt(file, kwargs['measure_range'])
     fname = output_fpath + "_result" + ".txt"
     with open(fname, "w") as file:
         np.savetxt(file, measure_result)
@@ -54,7 +54,7 @@ def get_plot_fig(measure_result, **kwargs):
     title = get_plot_title(**kwargs)
     ax.set_title(title, fontsize = 20)
     # plot
-    ax.plot(kwargs['sampling_range'], measure_result, '-k')
+    ax.plot(kwargs['measure_range'], measure_result, '-k')
     return fig
 
 #---------- TeX style string generators ----------
