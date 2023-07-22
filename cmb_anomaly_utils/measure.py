@@ -18,15 +18,17 @@ def calc_corr_full_integral(sky_pix:pix_data, **kwargs):
         full_int        = mu.integrate_curve(measure_range, fullsky_corr ** 2)
     return full_int
 
-def calc_cap_measure_in_all_dir(cmb_pd: pix_data, dir_lat_arr, dir_lon_arr, **kwargs):
+def calc_measure_in_all_dir(cmb_pd: pix_data, dir_lat_arr, dir_lon_arr, **kwargs):
     ndir            = len(dir_lat_arr)
     nsamples        = kwargs.get('ngeom_samples', 181)
     all_dir_measure = np.zeros((ndir, nsamples))
-    pix_pos         = np.copy(cmb_pd.pos)
+    pix_pos         = np.copy(cmb_pd.raw_pos)
+    get_measure     = get_cap_measure if kwargs.get('geom_flag') == const.CAP_FLAG \
+                        else get_strip_measure
     for i in range(ndir):
         print(f"{i}/{ndir - 1} \r", end="")
-        cmb_pd.pos = coords.rotate_pole_to_north(pix_pos, dir_lat_arr[i], dir_lon_arr[i])
-        _result = get_cap_measure(cmb_pd, **kwargs)
+        cmb_pd.raw_pos = coords.rotate_pole_to_north(pix_pos, dir_lat_arr[i], dir_lon_arr[i])
+        _result = get_measure(cmb_pd, **kwargs)
         all_dir_measure[i] = _result
     return all_dir_measure
 
@@ -92,11 +94,19 @@ def get_cap_measure(sky_pix:pix_data, **kwargs):
     measure_func            = func_dict[measure_flag]
     measure_results         = np.zeros(len(geom_range))
     for i, ca in enumerate(geom_range):
-        print("- Cap size: {} degrees\r".format(ca), end = "")
+        # print("- Cap size: {} degrees\r".format(ca), end = "")
         top, bottom = sky_pix.get_top_bottom_caps(ca)
         kwargs['max_valid_ang'] = np.minimum(ca, 180 - ca)
+        # Remove invalid pixels
+        if top.get_valid_pixel_ratio() < const.MIN_VALID_PIX_RATIO:
+            measure_results[i] = np.nan
+            continue
+        elif measure_flag in (const.D_CORR2_FLAG, const.D_STD2_FLAG) and \
+                bottom.get_valid_pixel_ratio() < const.MIN_VALID_PIX_RATIO:
+            measure_results[i] = np.nan
+            continue
         measure_results[i] = measure_func(top, bottom, **kwargs)
-    print()
+    # print()
     return measure_results
 
 
@@ -123,20 +133,28 @@ def get_strip_measure(sky_pix:pix_data, **kwargs):
     geom_range      = kwargs.get('geom_range', default_range)
     strip_thickness = kwargs.get('strip_thickness', 20)
     measure_flag    = kwargs.get('measure_flag', const.STD_FLAG)
-    measure_range   = kwargs.get('measure_range', default_range)
+    geom_range      = kwargs.get('geom_range', default_range)
     strip_starts, strip_centers, strip_ends = get_strip_limits(strip_thickness, geom_range)
     kwargs['full_integral'] = calc_corr_full_integral(sky_pix, **kwargs)
     
     # measure
     measure_func = func_dict[measure_flag]
-    measure_results = np.zeros(len(measure_range))
+    measure_results = np.zeros(len(geom_range))
     for i in range(len(strip_centers)):
-        print("- Strip center: {} degrees".format(strip_centers[i])+" " * 20+"\r", end="")
+        # print("- Strip center: {} degrees".format(strip_centers[i])+" " * 20+"\r", end="")
         start = strip_starts[i]
         end   = strip_ends[i]
         strip, rest_of_sky = sky_pix.get_strip(start, end)
+        # Remove invalid pixels
+        if strip.get_valid_pixel_ratio() < const.MIN_VALID_PIX_RATIO:
+            measure_results[i] = np.nan
+            continue
+        elif measure_flag in (const.D_CORR2_FLAG, const.D_STD2_FLAG) and \
+                rest_of_sky.get_valid_pixel_ratio() < const.MIN_VALID_PIX_RATIO:
+            measure_results[i] = np.nan
+            continue
         ang   = np.maximum(start, end)
         kwargs['max_valid_ang'] = np.minimum(ang, 180 - ang)
         measure_results[i] = measure_func(strip, rest_of_sky, **kwargs)
-    print()
+    # print()
     return measure_results

@@ -22,7 +22,6 @@ _inputs = rmp.get_inputs()
 
 dir_nside                   = 16
 max_sim_num                 = 1000
-'''nside for different pole directions'''
 _inputs['nside']            = 64
 _inputs['pole_lat']         = 90
 _inputs['pole_lon']         = 0
@@ -44,5 +43,5 @@ dir_lon, dir_lat = hp.pix2ang(dir_nside, np.arange(npix), lonlat = True)
 # direction for cmb
 print("finding direction for cmb")
 cmb_pd : pix_data = rmp.get_cmb_pixdata(**_inputs)
-cmb_all_dir_anom = cau.measure.calc_cap_measure_in_all_dir(cmb_pd, dir_lat, dir_lon, **_inputs)
+cmb_all_dir_anom = cau.measure.calc_measure_in_all_dir(cmb_pd, dir_lat, dir_lon, **_inputs)
 np.savetxt("./output/cmb_all_dir_anomaly.txt", cmb_all_dir_anom)

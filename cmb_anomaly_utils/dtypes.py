@@ -7,45 +7,70 @@ from . import math_utils as mu
 
 class pix_data:
     def __init__(self, data:np.ndarray, pos:np.ndarray, raw_mask:np.ndarray = None):
-        self.data = data
-        self.pos = pos
-        self.raw_mask = raw_mask
-        _mask = np.logical_not(raw_mask)
-        # swapping ON and OFF, because _mask is true in masked areas and false in data area
-        self.screen = (_mask == False)
+        self.raw_data = data
+        self.raw_pos = pos
+        self.raw_mask = np.array(raw_mask, dtype=bool)
     
+    @property
+    def data(self):
+        screen = self.get_pixel_screen()
+        return self.raw_data[screen]
+    
+    @data.setter
+    def data(self, value):
+        self.raw_data = value
+
+    @property
+    def pos(self):
+        screen = self.get_pixel_screen()
+        return self.raw_pos[screen]
+    
+    @pos.setter
+    def pos(self, value):
+        self.raw_pos = value
+
     def copy(self):
-        return pix_data(np.copy(self.data), np.copy(self.pos), np.copy(self.raw_mask))
+        return pix_data(np.copy(self.raw_data), np.copy(self.raw_pos), np.copy(self.raw_mask))
     
-    def get_filtered(self, filter) -> "pix_data":
-        if self.raw_mask is None:
-            return pix_data(self.data[filter], self.pos[filter])
-        screen_map = self.screen[filter]
-        return pix_data(self.data[filter][screen_map], self.pos[filter][screen_map])
+    def extract_selection(self, selection) -> "pix_data":
+        _raw_mask = None if self.raw_mask is None else self.raw_mask[selection]
+        return pix_data(self.raw_data[selection],
+                        self.raw_pos[selection],
+                        _raw_mask)
+
+    def get_pixel_screen(self):
+        _mask = np.logical_not(self.raw_mask)
+        # swapping ON and OFF, because _mask is True in masked areas and False in data area
+        screen = (_mask == False)
+        return screen
+
+    def get_valid_pixel_ratio(self):
+        screen = self.get_pixel_screen()
+        return np.sum(screen) / len(screen)
 
     def get_top_bottom_caps(self, cap_angle):
-        z_border = angle_to_z(cap_angle)
+        z_cap_border     = angle_to_z(cap_angle)
         # top cap
-        top_filter = self.pos[:, 2] > z_border
-        top_cap = self.get_filtered(top_filter)
+        top_selection    = self.raw_pos[:, 2] > z_cap_border
+        top_cap          = self.extract_selection(top_selection)
         # bottom cap
-        bottom_filter = self.pos[:, 2] <= z_border
-        bottom_cap = self.get_filtered(bottom_filter)
+        bottom_selection = np.logical_not(top_selection)
+        bottom_cap       = self.extract_selection(bottom_selection)
         return top_cap, bottom_cap
 
     def get_strip(self, start_angle, stop_angle):
         '''returns a strip between given angles and the rest of sky\n
         start and stop angles have to be in degrees'''
-        z_start = angle_to_z(start_angle)
-        z_stop  = angle_to_z(stop_angle)
-        strip_filter = (z_start >= self.pos[:, 2]) * (self.pos[:, 2] >= z_stop)
-        strip = self.get_filtered(strip_filter)
-        rest_of_sky_filter = np.array([not i for i in strip_filter])
-        rest_of_sky = self.get_filtered(rest_of_sky_filter)
+        z_start         = angle_to_z(start_angle)
+        z_stop          = angle_to_z(stop_angle)
+        strip_selection = (z_start >= self.raw_pos[:, 2]) * (self.raw_pos[:, 2] >= z_stop)
+        strip           = self.extract_selection(strip_selection)
+        r_o_s_selection = np.logical_not(strip_selection)
+        rest_of_sky     = self.extract_selection(r_o_s_selection)
         return strip, rest_of_sky
     
     def add_legendre_modulation(self, a_l):
         # in legendre polynomials z = cos(theta) is used
-        z = self.pos[:, 2]
+        z = self.raw_pos[:, 2]
         legendre_on_pix = np.array([a_l[i] * mu.legendre(i, z) for i in range(1, len(a_l))])
-        self.data *= (1 + np.sum(legendre_on_pix, axis = 0))
+        self.raw_data *= (1 + np.sum(legendre_on_pix, axis = 0))

@@ -11,11 +11,21 @@ cmb_fpath               = "./input/cmb_fits_files/COM_CMB_IQU-commander_2048_R3.
 mask_fpath              = "./input/cmb_fits_files/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
 input_params_fpath      = './input/run_parameters.json'
 
-def get_inputs():
+def get_inputs() -> dict:
     json_inputs_file =  open(input_params_fpath,'r')
     _inputs = json.loads(json_inputs_file.read())
     json_inputs_file.close()
     return _inputs
+
+def get_cmb_pixdata(**kwargs):
+    sky_pix = cau.map_reader.get_data_pix_from_cmb(cmb_fpath, mask_fpath, **kwargs)
+    return sky_pix
+
+def get_mask(**kwargs):
+    if not kwargs.get('is_masked', False):
+        return None
+    mask = cau.map_reader.read_mask(mask_fpath, kwargs.get('nside', 64))
+    return mask
 
 class bcolors:
     HEADER    = '\033[95m'
@@ -29,7 +39,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 def print_inputs(input_dict):
-    line_col   = bcolors.OKCYAN
+    line_col  = bcolors.OKCYAN
     txt_col   = bcolors.WARNING
     # max key length
     mkl = 20
@@ -54,7 +64,3 @@ def print_inputs(input_dict):
         print(txt_before_delim + " : " + colorize(str(val), txt_col))
     # fancy line
     for i in range(2) : print_line(2 * mkl, line_col)
-
-def get_cmb_pixdata(**inputs):
-    sky_pix = cau.map_reader.get_data_pix_from_cmb(cmb_fpath, mask_fpath, **inputs)
-    return sky_pix

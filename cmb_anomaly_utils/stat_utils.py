@@ -32,7 +32,7 @@ def get_extended_range(sampling_range, new_start = 0, new_stop = 180):
     return ext_range
 
 def find_nearest_index(arr, val):
-    return np.argmin(np.abs(arr - val))
+    return np.nanargmin(np.abs(arr - val))
 
 #----------- Parallel -----------
 def get_chunk(pdata:pix_data, block_size, block_num):
@@ -83,10 +83,10 @@ def parallel_correlation(pdata:pix_data, **kwargs):
                         two_blocks_correlation, data1, pos1, data2, pos2, nmeasure_samples, is_same))
                 # print("- Process for data chunks \"{}\" and \"{}\" queued".format(i,j))
         results = np.array([proc.result() for proc in processes])
-        corr_tilepair   = results[:, 0]
-        count_tilepair  = results[:, 1]
-    _corr   = np.sum(corr_tilepair, axis= 0)
-    _count  = np.array(np.sum(count_tilepair, axis= 0), dtype = np.int_)
+        corr_chunkpair   = results[:, 0]
+        count_chunkpair  = results[:, 1]
+    _corr   = np.sum(corr_chunkpair, axis= 0)
+    _count  = np.array(np.sum(count_chunkpair, axis= 0), dtype = np.int_)
     _count[_count == 0] = 1
     return _corr / _count
 

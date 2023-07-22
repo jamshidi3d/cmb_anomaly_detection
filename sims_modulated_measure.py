@@ -39,14 +39,17 @@ max_l       = 10
 max_sim_num = 1000
 
 _inputs['nside']            = 64
-_inputs['sampling_start']   = 0
-_inputs['sampling_stop']    = 180
+_inputs['geom_start']       = 0
+_inputs['geom_stop']        = 180
 _inputs['nsamples']         = 1 + 180
 _inputs['measure_flag']     = cau.const.STD_FLAG
 _inputs['geom_flag']        = cau.const.STRIP_FLAG
-_inputs['sampling_range']   = cau.stat_utils.get_measure_range(**_inputs)
+_inputs['geom_range']       = cau.stat_utils.get_geom_range(**_inputs)
+# This is the measure that we take from simulations
+measure_to_look             = cau.const.STD_FLAG
 
-sampling_range = _inputs['sampling_range']
+geom_range = _inputs['geom_range']
+
 
 def get_modulated_measure_from_sim(sim_num, modulation_factor):
     print(f'sim number {sim_num:04} \r', end='')
@@ -66,14 +69,14 @@ cmb_pix_data        = rmp.get_cmb_pixdata(**_inputs)
 cmb_measure_results = cau.measure.get_strip_measure(cmb_pix_data , **_inputs)
 
 # convert degree to radians to compute legendre coeffs
-cmb_a_l = mu.get_all_legendre_modulation(sampling_range * np.pi / 180, cmb_measure_results, max_l)
+cmb_a_l = mu.get_all_legendre_modulation(geom_range * np.pi / 180, cmb_measure_results, max_l)
 np.savetxt('./output/cmb_a_l.txt', cmb_a_l)
 
 # change probe after modulation
-_inputs['measure_flag'] = cau.const.STD_FLAG
+_inputs['measure_flag'] = measure_to_look
 
 sims_a_l        = np.zeros((max_sim_num, max_l + 1))
-sims_results    = np.zeros((max_sim_num, len(sampling_range)))
+sims_results    = np.zeros((max_sim_num, len(geom_range)))
 sim_pos         = cau.map_reader.read_pos(_inputs['nside'])
 
 # modulate each l separately
@@ -90,7 +93,7 @@ if mod_mode == SINGLE_L_MODE:
             sim_measure_results = get_modulated_measure_from_sim(sim_num, modulation_factor)
             if sim_measure_results is None:
                 continue
-            s_a_l = mu.get_single_legendre_modulation(sampling_range * np.pi / 180,
+            s_a_l = mu.get_single_legendre_modulation(geom_range * np.pi / 180,
                                                     sim_measure_results,
                                                     nonzero_l)
             sims_a_l[sim_num, nonzero_l] = s_a_l
