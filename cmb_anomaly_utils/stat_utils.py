@@ -20,6 +20,8 @@ def get_measure_range(**kwargs):
     return np.linspace(measure_start, measure_stop, nsamples)
 
 def get_geom_range(**kwargs):
+    '''kwargs ->\n
+    geom_start, geom_stop, ngeom_samples'''
     geom_start      = kwargs.get('geom_start', 0)
     geom_stop       = kwargs.get('geom_stop', 180)
     nsamples        = kwargs.get('ngeom_samples', 181)

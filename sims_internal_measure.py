@@ -10,16 +10,15 @@ import healpy as hp
 import matplotlib.pyplot as plt
 import cmb_anomaly_utils as cau, read_cmb_maps_params as rmp
 
-sims_anom_path  = './output/sims_all_dir_anom_5deg/'
-sims_path       = './input/commander_sims/'
 
 _inputs = rmp.get_inputs()
 
 dir_nside                   = 16
 max_sim_num                 = 1000
 max_l                       = 10
-do_search_for_all_caps      = False
+do_search_for_all_caps      = True
 selected_size_for_dir       = 30
+_inputs['is_masked']        = True
 _inputs['nside']            = 64
 _inputs['pole_lat']         = 90
 _inputs['pole_lon']         = 0
@@ -36,6 +35,11 @@ _inputs['measure_range']    = cau.stat_utils.get_measure_range(**_inputs)
 _inputs['geom_range']       = cau.stat_utils.get_geom_range(**_inputs)
 do_compute_legendre_exp     = False
 
+
+mask_txt = 'masked' if _inputs.get('is_masked') else 'inpainted'
+
+sims_anom_path  = './output/sims_{}_all_dir_anom_5deg/'.format(mask_txt)
+sims_path       = './input/commander_sims/'
 
 geom_range  = _inputs['geom_range']
 theta       = _inputs['geom_range'] * np.pi / 180
@@ -95,7 +99,8 @@ if do_compute_legendre_exp:
     np.savetxt('./output/sims_internal_a_l.txt', sims_a_l)
 
 # Save measure results
-fbasepath = './output/sims_internal_{}_{}_{}'.format(
+fbasepath = './output/sims_internal_{}_{}_{}_{}'.format(
+    mask_txt,
     'MAD' if do_search_for_all_caps else selected_size_for_dir,
     _inputs['geom_flag'].lower(),
     _inputs['measure_flag'].lower())

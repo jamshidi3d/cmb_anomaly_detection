@@ -3,6 +3,7 @@ from . import (
     coords,
     dtypes,
     map_reader,
+    direction,
     map_filler,
     measure,
     output,

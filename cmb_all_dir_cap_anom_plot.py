@@ -18,13 +18,17 @@ img_dpi                     = 150
 dir_nside                   = 16
 # map params
 _inputs['nside']            = 64
+_inputs['is_masked']        = True
 _inputs['geom_flag']        = cau.const.CAP_FLAG
 _inputs['geom_start']       = 10
 _inputs['geom_stop']        = 90
-_inputs['ngeom_samples']    = 1 + int((_inputs['geom_stop'] - _inputs['geom_start']) / 2)
-geom_range                  = cau.stat_utils.get_measure_range(**_inputs)
+dtheta                      = 5
+_inputs['ngeom_samples']    = 1 + int((_inputs['geom_stop'] - _inputs['geom_start']) / dtheta)
+_inputs['geom_range']       = cau.stat_utils.get_geom_range(**_inputs)
+geom_range = _inputs['geom_range']
 
-all_dir_anomaly  = np.loadtxt("./output/cmb_all_dir_anomaly.txt")
+masked_txt = 'masked' if _inputs.get('is_masked') else 'inpainted'
+all_dir_anomaly  = np.loadtxt(f"./output/cmb_{masked_txt}_all_dir_cap_anom.txt")
 
 '''nside for different pole directions'''
 npix             = 12 * dir_nside ** 2
