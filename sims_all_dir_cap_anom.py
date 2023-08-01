@@ -6,11 +6,6 @@
 #
 import numpy as np
 import healpy as hp
-import concurrent.futures
-
-import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use('Agg')
 
 import read_cmb_maps_params as rmp
 import cmb_anomaly_utils as cau

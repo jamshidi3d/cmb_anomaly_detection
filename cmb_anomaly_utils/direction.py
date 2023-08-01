@@ -6,11 +6,10 @@ from .stat_utils import find_nearest_index
 from .coords import convert_polar_to_xyz
 
 
-def get_healpix_lat_lon(ndir):
+def get_healpix_latlon(ndir):
     dir_nside = int(np.sqrt(ndir / 12))
     dir_lon, dir_lat = hp.pix2ang(dir_nside, np.arange(ndir), lonlat = True)
     return dir_lat, dir_lon
-
 
 def average_lon(lon_arr):
     x = np.cos(lon_arr)
@@ -32,31 +31,37 @@ def average_dir_by_latlon(dir_lat : np.ndarray, dir_lon : np.ndarray):
 
 def find_dir_using_mac(all_dir_cap_anom,
                        special_cap_size:float = None,
-                       geom_range = None):
+                       geom_range = None,
+                       all_dir_lat = None,
+                       all_dir_lon = None):
     ''' lat, lon (in degrees)'''
-    print(all_dir_cap_anom.shape)
-    # The first index determines direction
-    ndir = all_dir_cap_anom.shape[0]
-    dir_lat, dir_lon = get_healpix_lat_lon(ndir)
-    # Select the cap size in which the anomaly is the most
+    dir_lat = all_dir_lat
+    dir_lon = all_dir_lon
+    if (all_dir_lat is None) or (all_dir_lon is None):
+        dir_lat, dir_lon = get_healpix_latlon(all_dir_cap_anom.shape[0])
+    # MAC aligned
     if special_cap_size is None:
         index = np.unravel_index(np.nanargmax(all_dir_cap_anom),
                                  all_dir_cap_anom.shape)
         mad_i = index[0]
     else:
-        # OR mad in specified cap size
+        # OR in specified cap size
         cap_index = find_nearest_index(geom_range, special_cap_size)
-        print(geom_range)
-        print(cap_index)
         mad_i =  np.nanargmax(all_dir_cap_anom[:, cap_index])
     return dir_lat[mad_i], dir_lon[mad_i]
 
-def find_dir_accumulative(all_dir_cap_anom, top_ratio = 0.1):
+def find_dir_accumulative(all_dir_cap_anom,
+                          top_ratio = 0.1,
+                          all_dir_lat = None,
+                          all_dir_lon = None):
+    ''' lat, lon (in degrees)'''
+    dir_lat = all_dir_lat
+    dir_lon = all_dir_lon
+    if (all_dir_lat is None) or (all_dir_lon is None):
+        dir_lat, dir_lon = get_healpix_latlon(all_dir_cap_anom.shape[0])
     dir_weights = np.sum(all_dir_cap_anom, axis = 0)
     _max, _min  = np.max(dir_weights), np.min(dir_weights)
     _min_weight = _max - top_ratio * (_max - _min)
     _screen     = dir_weights > _min_weight
-    ndir        = len(dir_weights)
-    dir_lat, dir_lon = get_healpix_lat_lon(ndir)
     return average_dir_by_latlon(dir_lat[_screen], dir_lon[_screen])
 

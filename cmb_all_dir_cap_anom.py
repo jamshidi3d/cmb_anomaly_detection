@@ -20,7 +20,7 @@ _inputs = rmp.get_inputs()
 
 dir_nside                   = 16
 _inputs['nside']            = 64
-_inputs['is_masked']        = True
+_inputs['is_masked']        = False
 _inputs['pole_lat']         = 90
 _inputs['pole_lon']         = 0
 _inputs['measure_flag']     = cau.const.STD_FLAG
@@ -43,5 +43,5 @@ dir_lon, dir_lat = hp.pix2ang(dir_nside, np.arange(npix), lonlat = True)
 mask_txt = 'masked' if _inputs.get('is_masked') else 'inpainted'
 print("finding direction for cmb")
 cmb_pd : pix_data = rmp.get_cmb_pixdata(**_inputs)
-cmb_all_dir_anom = cau.measure.calc_measure_in_all_dir(cmb_pd, dir_lat, dir_lon, **_inputs)
+cmb_all_dir_anom  = cau.measure.calc_measure_in_all_dir(cmb_pd, dir_lat, dir_lon, **_inputs)
 np.savetxt(f"./output/cmb_{mask_txt}_all_dir_cap_anom.txt", cmb_all_dir_anom)

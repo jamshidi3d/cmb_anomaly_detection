@@ -16,13 +16,14 @@ _inputs['nside']            = 64
 _inputs['is_masked']        = True
 dir_nside                   = 16
 do_use_mac                  = True
-_inputs['pole_lat']         = -20
-_inputs['pole_lon']         = 221
+selected_size_for_dir       = 30
+_inputs['pole_lat']         = 90
+_inputs['pole_lon']         = 0
 # measure params
 _inputs['measure_start']    = 0
 _inputs['measure_stop']     = 180
 _inputs['nmeasure_samples'] = 181
-_inputs['measure_flag']     = cau.const.STD_FLAG
+_inputs['measure_flag']     = cau.const.D_STD2_FLAG
 # geometry params
 _inputs['geom_start']       = 0
 _inputs['geom_stop']        = 180
@@ -42,7 +43,7 @@ if do_use_mac:
     
     plat, plon = cau.direction.find_dir_using_mac(
                                         cmb_all_dir_cap_anom,
-                                        special_cap_size = 30,
+                                        special_cap_size = selected_size_for_dir,
                                         geom_range = cap_geom_range)
     print(plon, plat)
     _inputs['pole_lat'], _inputs['pole_lon'] = plat, plon

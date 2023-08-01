@@ -20,4 +20,4 @@ B_MODE              = 'BMODE'
 # parameters    
 ANG_THRESHOLD       = 0.0001
 THRESHOLD           = 0.0000001
-MIN_VALID_PIX_RATIO = 0.1
+MIN_VALID_PIX_RATIO = 0.9

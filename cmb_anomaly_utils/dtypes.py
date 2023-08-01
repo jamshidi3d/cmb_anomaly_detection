@@ -9,12 +9,14 @@ class pix_data:
     def __init__(self, data:np.ndarray, pos:np.ndarray, raw_mask:np.ndarray = None):
         self.raw_data = data
         self.raw_pos = pos
-        self.raw_mask = np.array(raw_mask, dtype=bool)
+        self.raw_mask = None if raw_mask is None else np.array(raw_mask, dtype=bool)
     
     @property
     def data(self):
-        screen = self.get_pixel_screen()
-        return self.raw_data[screen]
+        if not self.raw_mask is None:
+            screen = self.get_pixel_screen()
+            return self.raw_data[screen]
+        return self.raw_data
     
     @data.setter
     def data(self, value):
@@ -22,9 +24,11 @@ class pix_data:
 
     @property
     def pos(self):
-        screen = self.get_pixel_screen()
-        return self.raw_pos[screen]
-    
+        if not self.raw_mask is None:
+            screen = self.get_pixel_screen()
+            return self.raw_pos[screen]
+        return self.raw_pos
+
     @pos.setter
     def pos(self, value):
         self.raw_pos = value
@@ -45,6 +49,8 @@ class pix_data:
         return screen
 
     def get_valid_pixel_ratio(self):
+        if self.raw_mask is None:
+            return 1.0
         screen = self.get_pixel_screen()
         return np.sum(screen) / len(screen)
 

@@ -18,7 +18,8 @@ img_dpi                     = 150
 dir_nside                   = 16
 # map params
 _inputs['nside']            = 64
-_inputs['is_masked']        = True
+_inputs['is_masked']        = False
+_inputs['measure_flag']     = cau.const.STD_FLAG
 _inputs['geom_flag']        = cau.const.CAP_FLAG
 _inputs['geom_start']       = 10
 _inputs['geom_stop']        = 90
@@ -28,7 +29,7 @@ _inputs['geom_range']       = cau.stat_utils.get_geom_range(**_inputs)
 geom_range = _inputs['geom_range']
 
 masked_txt = 'masked' if _inputs.get('is_masked') else 'inpainted'
-all_dir_anomaly  = np.loadtxt(f"./output/cmb_{masked_txt}_all_dir_cap_anom.txt")
+all_dir_cap_anom  = np.loadtxt(f"./output/cmb_{masked_txt}_all_dir_cap_anom.txt")
 
 '''nside for different pole directions'''
 npix             = 12 * dir_nside ** 2
@@ -62,7 +63,7 @@ akrami_pix_index = hp.ang2pix(dir_nside, np.deg2rad(110), np.deg2rad(221))
 for cap_index, cap_size in enumerate(geom_range):
     fig, ax = plt.subplots()
     plt.axes(ax)
-    anom_arr = all_dir_anomaly[:, cap_index]
+    anom_arr = all_dir_cap_anom[:, cap_index]
     dir_index = np.nanargmax(anom_arr)
     _title = r"$cap size = {}^\circ , lat|_{{max}} = {:0.1f}, lon|_{{max}} = {:0.1f}$".format(
         cap_size,
@@ -82,7 +83,7 @@ dir_pref = colorize_special_pix(dir_pref, akrami_pix_index, factor = 0.4, from_m
 fig, ax = plt.subplots()
 plt.axes(ax)
 _title = "Direction of Anomaly"
-np.savetxt("./output/dir_preference.txt", dir_pref)
+# np.savetxt("./output/dir_preference.txt", dir_pref)
 hp.mollview(dir_pref, title = _title, xsize = 1600, hold=True)
 fig.savefig("./output/dir_preference.png", transparent=True, dpi=img_dpi)
 
