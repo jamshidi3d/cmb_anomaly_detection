@@ -88,6 +88,8 @@ def get_cap_measure(sky_pix:pix_data, **kwargs):
     measure_flag - nmeasure_samples - measure_range\n
     ngeom_samples - geom_range\n
     ndata_chunks'''
+
+    min_pix_ratio  = kwargs.get('min_pix_ratio', 1)
     measure_flag  = kwargs.get('measure_flag', const.STD_FLAG)
     geom_range    = kwargs.get('geom_range', default_range)
     kwargs['full_integral'] = calc_corr_full_integral(sky_pix, **kwargs)
@@ -98,11 +100,11 @@ def get_cap_measure(sky_pix:pix_data, **kwargs):
         top, bottom = sky_pix.get_top_bottom_caps(ca)
         kwargs['max_valid_ang'] = np.minimum(ca, 180 - ca)
         # Remove invalid pixels
-        if top.get_valid_pixel_ratio() < const.MIN_VALID_PIX_RATIO:
+        if top.get_valid_pixel_ratio() < min_pix_ratio:
             measure_results[i] = np.nan
             continue
         elif measure_flag in (const.D_CORR2_FLAG, const.D_STD2_FLAG) and \
-                bottom.get_valid_pixel_ratio() < const.MIN_VALID_PIX_RATIO:
+                bottom.get_valid_pixel_ratio() < min_pix_ratio:
             measure_results[i] = np.nan
             continue
         measure_results[i] = measure_func(top, bottom, **kwargs)
@@ -130,6 +132,7 @@ def get_strip_measure(sky_pix:pix_data, **kwargs):
     sampling_range - strip_thickness - measure_flag -\n
     nmeasure_samples - cutoff_ratio - ndata_chunks
     '''
+    min_pix_ratio   = kwargs.get('min_pix_ratio', 1)
     geom_range      = kwargs.get('geom_range', default_range)
     strip_thickness = kwargs.get('strip_thickness', 20)
     measure_flag    = kwargs.get('measure_flag', const.STD_FLAG)
@@ -146,11 +149,11 @@ def get_strip_measure(sky_pix:pix_data, **kwargs):
         end   = strip_ends[i]
         strip, rest_of_sky = sky_pix.get_strip(start, end)
         # Remove invalid pixels
-        if strip.get_valid_pixel_ratio() < const.MIN_VALID_PIX_RATIO:
+        if strip.get_valid_pixel_ratio() < min_pix_ratio:
             measure_results[i] = np.nan
             continue
         elif measure_flag in (const.D_CORR2_FLAG, const.D_STD2_FLAG) and \
-                rest_of_sky.get_valid_pixel_ratio() < const.MIN_VALID_PIX_RATIO:
+                rest_of_sky.get_valid_pixel_ratio() < min_pix_ratio:
             measure_results[i] = np.nan
             continue
         ang   = np.maximum(start, end)

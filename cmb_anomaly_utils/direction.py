@@ -1,3 +1,6 @@
+'''
+This module finds direction based on cap measures in different directions
+'''
 import numpy as np
 import healpy as hp
 
@@ -43,12 +46,12 @@ def find_dir_using_mac(all_dir_cap_anom,
     if special_cap_size is None:
         index = np.unravel_index(np.nanargmax(all_dir_cap_anom),
                                  all_dir_cap_anom.shape)
-        mad_i = index[0]
+        mac_i = index[0]
     else:
         # OR in specified cap size
         cap_index = find_nearest_index(geom_range, special_cap_size)
-        mad_i =  np.nanargmax(all_dir_cap_anom[:, cap_index])
-    return dir_lat[mad_i], dir_lon[mad_i]
+        mac_i =  np.nanargmax(all_dir_cap_anom[:, cap_index])
+    return dir_lat[mac_i], dir_lon[mac_i]
 
 def find_dir_accumulative(all_dir_cap_anom,
                           top_ratio = 0.1,

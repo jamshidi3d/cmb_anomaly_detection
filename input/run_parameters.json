@@ -5,6 +5,7 @@
     "pole_lat": -20,
     "pole_lon": 221,
     "is_masked": false,
+    "min_pix_ratio": 0.9,
     "measure_flag": "STD",
     "geom_flag": "STRIP",
     "measure_start": 0,

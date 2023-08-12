@@ -39,7 +39,7 @@ dir_cap_geom_range          = np.linspace(10, 90, int((90 - 10)/5 + 1))
 
 mask_txt = 'masked' if _inputs.get('is_masked') else 'inpainted'
 
-sims_anom_path  = './output/sims_{}_all_dir_anom_5deg/'.format(mask_txt)
+sims_anom_path  = './output/sims_{}_all_dir_cap_anom_0.9ratio_5deg/'.format(mask_txt)
 sims_path       = './input/commander_sims/'
 
 geom_range  = _inputs['geom_range']
