@@ -6,7 +6,7 @@ import healpy as hp
 
 
 from .stat_utils import find_nearest_index
-from .coords import convert_polar_to_xyz
+from .coords import convert_polar_to_xyz, convert_xyz_to_polar
 
 
 def get_healpix_latlon(ndir):
@@ -24,13 +24,22 @@ def average_lon(lon_arr):
 def average_directions_by_vec(vec_arr):
     pass
 
-def average_dir_by_latlon(dir_lat : np.ndarray, dir_lon : np.ndarray):
+def average_dir_by_zphi(dir_lat : np.ndarray, dir_lon : np.ndarray):
     z_arr    = np.cos(dir_lat)
     z_mean   = np.mean(z_arr)
     lon_mean = average_lon(dir_lon)
     lat_mean = np.arccos(z_mean)
     return lat_mean, lon_mean
 
+def average_dir_by_xyz(dir_lat : np.ndarray, dir_lon : np.ndarray):
+    pos = convert_polar_to_xyz(dir_lat, dir_lon)
+    _x  = np.mean(pos[:, 0])
+    _y  = np.mean(pos[:, 1])
+    _z  = np.mean(pos[:, 2])
+    _r  = np.sqrt(_x**2 + _y**2 + _z**2)
+    _x, _y, _z = _x/_r, _y/_r, _z/_r
+    lat_arr, lon_arr = convert_xyz_to_polar(np.array([_x]), np.array([_y]), np.array([_z]))
+    return lat_arr[0], lon_arr[0]
 
 def find_dir_using_mac(all_dir_cap_anom,
                        special_cap_size:float = None,
@@ -66,5 +75,5 @@ def find_dir_accumulative(all_dir_cap_anom,
     _max, _min  = np.max(dir_weights), np.min(dir_weights)
     _min_weight = _max - top_ratio * (_max - _min)
     _screen     = dir_weights > _min_weight
-    return average_dir_by_latlon(dir_lat[_screen], dir_lon[_screen])
+    return average_dir_by_xyz(dir_lat[_screen], dir_lon[_screen])
 

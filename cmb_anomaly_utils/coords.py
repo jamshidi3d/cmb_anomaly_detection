@@ -12,6 +12,12 @@ def convert_polar_to_xyz(lat_ndarray, lon_ndarray):
     nz = np.cos(theta)
     return np.column_stack((nx,ny,nz))
 
+def convert_xyz_to_polar(x_ndarray, y_ndarray, z_ndarray):
+    '''returns lat, lon '''
+    theta   = np.arccos(z_ndarray)
+    phi     = np.arctan(y_ndarray / x_ndarray)
+    lat, lon = np.rad2deg(phi), np.rad2deg(90 - theta)
+    return lat, lon
 
 def rotate_angle_axis(vec_ndarray, angle, axis):
     ux, uy, uz = axis

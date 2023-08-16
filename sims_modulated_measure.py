@@ -1,7 +1,7 @@
 # 
 # 
 # This script:
-#   1. calculates measures for strips of the CMB in the MostAnomalousDirection(MAD)
+#   1. calculates measures for strips of the CMB in the MostAnomalousCap(MAC)
 #   2. reads the legendre coefficients from that measure-function (which is a function of theta)
 #   3. applies the modulation on 1000 simulations
 #   4. calculates measures for stripes on this modulated simulations

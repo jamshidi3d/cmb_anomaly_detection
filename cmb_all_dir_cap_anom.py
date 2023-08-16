@@ -21,6 +21,7 @@ _inputs = rmp.get_inputs()
 dir_nside                   = 16
 _inputs['nside']            = 64
 _inputs['is_masked']        = False
+_inputs['min_pix_ratio']    = 0.7
 _inputs['pole_lat']         = 90
 _inputs['pole_lon']         = 0
 _inputs['measure_flag']     = cau.const.STD_FLAG

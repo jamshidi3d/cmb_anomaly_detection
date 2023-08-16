@@ -21,6 +21,7 @@ max_sim_num                 = 1000
 
 _inputs['nside']            = 64
 _inputs['is_masked']        = True
+_inputs['min_pix_ratio']    = 0.7
 _inputs['pole_lat']         = 90
 _inputs['pole_lon']         = 0
 _inputs['measure_flag']     = cau.const.STD_FLAG

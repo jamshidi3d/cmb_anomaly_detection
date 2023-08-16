@@ -17,6 +17,7 @@ _inputs['is_masked']        = True
 dir_nside                   = 16
 do_use_mac                  = True
 selected_size_for_dir       = 30
+_inputs['min_pix_ratio']    = 0.7
 _inputs['pole_lat']         = 90
 _inputs['pole_lon']         = 0
 # measure params
@@ -41,10 +42,12 @@ if do_use_mac:
     mask_txt = 'masked' if _inputs.get('is_masked') else 'inpainted'
     cmb_all_dir_cap_anom = np.loadtxt(f'./output/cmb_{mask_txt}_all_dir_cap_anom.txt')
     
-    plat, plon = cau.direction.find_dir_using_mac(
-                                        cmb_all_dir_cap_anom,
-                                        special_cap_size = selected_size_for_dir,
-                                        geom_range = cap_geom_range)
+    # plat, plon = cau.direction.find_dir_using_mac(
+    #                                     cmb_all_dir_cap_anom,
+    #                                     special_cap_size = selected_size_for_dir,
+    #                                     geom_range = cap_geom_range)
+    plat, plon = cau.direction.find_dir_accumulative(cmb_all_dir_cap_anom)
+    
     print(plon, plat)
     _inputs['pole_lat'], _inputs['pole_lon'] = plat, plon
 
@@ -62,7 +65,3 @@ measure_results = get_measure(sky_pix, **_inputs)
 
 # Save data
 cau.output.save_data_to_txt(measure_results, **_inputs)
-
-# Plot
-# fig = cau.output.get_plot_fig(measure_results, **inputs)
-# cau.output.save_fig_to_pdf(fig, **inputs)

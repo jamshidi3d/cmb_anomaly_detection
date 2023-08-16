@@ -1,7 +1,7 @@
 #
 #
 # This script computes the internal legendre coefficients of measure, computed
-# on strips in the MostAnomalousDirection(MAD).
+# on strips in the MostAnomalousCap(MAC).
 # It is useful for computing p-values 
 #
 import os
@@ -13,9 +13,10 @@ _inputs = rmp.get_inputs()
 
 max_sim_num                 = 1000
 max_l                       = 10
-do_search_for_all_caps      = True
+do_use_mac                  = True
 selected_size_for_dir       = 30
 do_compute_legendre_exp     = False
+_inputs['min_pix_ratio']    = 0.7
 _inputs['nside']            = 64
 _inputs['is_masked']        = True
 _inputs['pole_lat']         = 90
@@ -54,10 +55,7 @@ sims_a_l    = np.zeros((max_sim_num, max_l + 1))
 get_measure = cau.measure.get_cap_measure if _inputs.get('geom_flag') == cau.const.CAP_FLAG \
                 else cau.measure.get_strip_measure
 
-cap_index   = cau.stat_utils.find_nearest_index(geom_range, selected_size_for_dir)
-
-
-# Find MAD & read measure & legendre coefs
+# Find MAC & read measure & legendre coefs
 file_list   = os.listdir(sims_anom_path)
 all_dir_lat, all_dir_lon = None, None
 
@@ -70,13 +68,14 @@ for sim_num, fname in enumerate(file_list):
             cau.direction.get_healpix_latlon(all_dir_cap_anom.shape[0])
 
     _inputs['pole_lat'], _inputs['pole_lon'] = \
-        cau.direction.find_dir_using_mac(
-            all_dir_cap_anom,
-            special_cap_size = None if do_search_for_all_caps else selected_size_for_dir,
-            geom_range  = dir_cap_geom_range,
-            all_dir_lat = all_dir_lat,
-            all_dir_lon = all_dir_lon
-        )
+        cau.direction.find_dir_accumulative(all_dir_cap_anom)
+        # cau.direction.find_dir_using_mac(
+        #     all_dir_cap_anom,
+        #     special_cap_size = None if do_use_mac else selected_size_for_dir,
+        #     geom_range  = dir_cap_geom_range,
+        #     all_dir_lat = all_dir_lat,
+        #     all_dir_lon = all_dir_lon
+        # )
     # Create data
     try:
         sim_temp = cau.map_reader.get_sim_attr(sims_path, 'T', sim_num)
@@ -85,9 +84,9 @@ for sim_num, fname in enumerate(file_list):
         continue
     sim_temp            -= np.mean(sim_temp)
     sim_pd              = cau.dtypes.pix_data(sim_temp, sim_pos, sim_mask)
-    # Align to MAD
-    mad_aligned_pos     = cau.coords.rotate_pole_to_north(sim_pos, _inputs['pole_lat'], _inputs['pole_lon'])
-    sim_pd.raw_pos      = mad_aligned_pos
+    # Align to MAC
+    mac_aligned_pos     = cau.coords.rotate_pole_to_north(sim_pos, _inputs['pole_lat'], _inputs['pole_lon'])
+    sim_pd.raw_pos      = mac_aligned_pos
     # Compute measure
     _result             = get_measure(sim_pd, **_inputs)
     sims_internal_measure[sim_num] = _result
@@ -102,7 +101,7 @@ if do_compute_legendre_exp:
 # Save measure results
 fpath = './output/sims_internal_{}_{}_{}_{}'.format(
     mask_txt,
-    'MAD' if do_search_for_all_caps else selected_size_for_dir,
+    'MAC' if do_use_mac else selected_size_for_dir,
     _inputs['geom_flag'].lower(),
     _inputs['measure_flag'].lower())
 np.savetxt(fpath + "_measure.txt", sims_internal_measure)
