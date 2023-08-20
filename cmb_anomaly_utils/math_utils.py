@@ -6,38 +6,43 @@ def integrate_curve(x, y):
     mean_y = 0.5 * (y[1:] + y[:-1])
     return np.sum(mean_y * dx)
 
+def get_normalized_to_mean(arr):
+    _mean = np.mean(arr)
+    _norm = arr if _mean == 0 else arr / _mean
+    return _norm
+
 #--------------legendre utils----------------
 
 def legendre(n, x):
     return np.polynomial.Legendre.basis(n)(x)
-    # '''Legendre Polynomials'''
-    # if(n == 0): # P0 = 1
-    #     return np.ones(len(x)) if type(x) == np.ndarray else 1 
-    # elif(n == 1): # P1 = x
-    #     return x
-    # else:
-    #     return (((2*n)-1) * x * legendre(n-1, x) - (n-1) * legendre(n-2, x)) / float(n)
 
-def get_single_legendre_coef(theta, y, l):
-    return (2*l + 1)/2 * integrate_curve(theta, y * np.sin(theta) * legendre(l, np.cos(theta)))
+def get_single_legendre_coef(theta_arr, y_arr, l):
+    _integral = integrate_curve(theta_arr,
+                                y_arr * np.sin(theta_arr) * legendre(l, np.cos(theta_arr)))
+    return (2*l + 1)/2 * _integral
 
-def get_all_legendre_coefs(theta, y, max_l):
+def get_all_legendre_coefs(theta_arr, y_arr, max_l):
     '''theta has to be in radians \n
     output is of size (max_l + 1)'''
     a_l = np.zeros(max_l + 1)
     for l in range(0, max_l + 1):
-        a_l[l] = get_single_legendre_coef(theta, y, l)
+        a_l[l] = get_single_legendre_coef(theta_arr, y_arr, l)
     return a_l
 
-def get_single_legendre_modulation(theta, y, l):
-    y_mean = np.mean(y)
-    y_mod = y if y_mean == 0 else y / y_mean
-    return get_single_legendre_coef(theta, y_mod, l)
+def get_single_legendre_modulation(theta_arr, y_arr, l):
+    y_norm = get_normalized_to_mean(y_arr)
+    return get_single_legendre_coef(theta_arr, y_norm, l)
 
-def get_all_legendre_modulation(theta, y, max_l):
-    y_mean = np.mean(y)
-    y_mod = y if y_mean == 0 else y / y_mean
-    return get_all_legendre_coefs(theta, y_mod, max_l)
+def get_all_legendre_modulation(theta_arr, y_arr, max_l):
+    y_norm = get_normalized_to_mean(y_arr)
+    return get_all_legendre_coefs(theta_arr, y_norm, max_l)
+
+def create_legendre_modulation_factor(pos_arr, a_l):
+    '''Generates the factor to be multiplied by map'''
+    # in legendre polynomials z = cos(theta) is used
+    z = pos_arr[:, 2]
+    legendre_on_pix = np.array([a_l[i] * legendre(i, z) for i in range(1, len(a_l))])
+    return (1 + np.sum(legendre_on_pix, axis = 0))
 
 #--------------extrapolation----------------
 

@@ -2,7 +2,7 @@ from . import (
     const,
     coords,
     dtypes,
-    map_reader,
+    file_reader,
     direction,
     map_filler,
     measure,

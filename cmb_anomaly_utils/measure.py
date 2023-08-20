@@ -1,6 +1,6 @@
 import numpy as np
 
-from .dtypes import pix_data
+from .dtypes import PixMap
 
 from . import const, stat_utils as su, math_utils as mu, coords
 
@@ -8,7 +8,7 @@ from . import const, stat_utils as su, math_utils as mu, coords
 default_range = np.arange(0, 180, 181)
 
 
-def calc_corr_full_integral(sky_pix:pix_data, **kwargs):
+def calc_corr_full_integral(sky_pix:PixMap, **kwargs):
     '''-> keyword arguments:\n
     ndata_chunks - nmeasure_samples - measure_range'''
     full_int = 1
@@ -18,7 +18,7 @@ def calc_corr_full_integral(sky_pix:pix_data, **kwargs):
         full_int        = mu.integrate_curve(measure_range, fullsky_corr ** 2)
     return full_int
 
-def calc_measure_in_all_dir(cmb_pd: pix_data, dir_lat_arr, dir_lon_arr, **kwargs):
+def calc_measure_in_all_dir(cmb_pd: PixMap, dir_lat_arr, dir_lon_arr, **kwargs):
     ndir            = len(dir_lat_arr)
     nsamples        = kwargs.get('ngeom_samples', 181)
     all_dir_measure = np.zeros((ndir, nsamples))
@@ -33,7 +33,7 @@ def calc_measure_in_all_dir(cmb_pd: pix_data, dir_lat_arr, dir_lon_arr, **kwargs
     return all_dir_measure
 
 #------------ Measures ------------
-def calc_dcorr2(patch1:pix_data, patch2:pix_data, **kwargs):
+def calc_dcorr2(patch1:PixMap, patch2:PixMap, **kwargs):
     '''-> keyword arguments: \n
     max_valid_ang - cutoff_ratio -\n
     ndata_chunks - measure_range - nmeasure_samples'''
@@ -49,62 +49,73 @@ def calc_dcorr2(patch1:pix_data, patch2:pix_data, **kwargs):
     return mu.integrate_curve(measure_range[:max_index],
                               (tctt[:max_index] - bctt[:max_index])**2)
 
-def calc_corr(patch1:pix_data, patch2:pix_data, **kwargs):
+def calc_corr(patch1:PixMap, patch2:PixMap, **kwargs):
     '''-> keyword arguments: \n
-    full_integral - nmeasure_samples\n
+    corr_full_integral - nmeasure_samples\n
     ndata_chunks - measure_range - max_valid_ang - cutoff_ratio'''
-    f_int           = kwargs.get('full_integral', 1)
+    f_int           = kwargs.get('corr_full_integral', 1)
     measure_range   = kwargs.get('measure_range', default_range)
     cutoff_ratio    = kwargs.get('cutoff_ratio', 2 / 3)
     max_valid_ang   = kwargs.get('max_valid_ang', 0)
     nsamples        = kwargs.get('nmeasure_samples', len(measure_range))
-    max_index   = int(cutoff_ratio * 2 * max_valid_ang / 180 * nsamples)
-    tctt        = su.parallel_correlation(patch1, **kwargs)
+    max_index       = int(cutoff_ratio * 2 * max_valid_ang / 180 * nsamples)
+    tctt            = su.parallel_correlation(patch1, **kwargs)
     if len(measure_range[:max_index]) == 0:
         return -1
     geom_int    = mu.integrate_curve(measure_range[:max_index], tctt[:max_index] ** 2)
     return geom_int / f_int - 1
 
-def calc_dstd2(patch1:pix_data, patch2:pix_data, **kwargs):
-    return (su.std_pix_data(patch1) - su.std_pix_data(patch2))**2
+def calc_std(patch1:PixMap, patch2:PixMap, **kwargs):
+    return su.std_pix_map(patch1)
 
-def calc_std(patch1:pix_data, patch2:pix_data, **kwargs):
-    return su.std_pix_data(patch1)
+def calc_norm_std(patch1:PixMap, patch2:PixMap, **kwargs):
+    std_full = kwargs.get('std_full', 1)
+    return su.std_pix_map(patch1) / std_full
 
-def calc_mean(patch1:pix_data, patch2:pix_data, **kwargs):
-    return su.mean_pix_data(patch1)
+def calc_dstd2(patch1:PixMap, patch2:PixMap, **kwargs):
+    return (su.std_pix_map(patch1) - su.std_pix_map(patch2))**2
+
+def calc_norm_dstd2(patch1:PixMap, patch2:PixMap, **kwargs):
+    return (calc_norm_std(patch1, **kwargs) - calc_norm_std(patch2, **kwargs))**2
+
+def calc_mean(patch1:PixMap, patch2:PixMap, **kwargs):
+    return su.mean_pix_map(patch1)
 
 func_dict = {
-    const.D_CORR2_FLAG: calc_dcorr2,
-    const.CORR_FLAG:    calc_corr,
-    const.MEAN_FLAG:    calc_mean,
-    const.STD_FLAG:     calc_std,
-    const.D_STD2_FLAG:  calc_dstd2
+    const.MEAN_FLAG:        calc_mean,
+    const.CORR_FLAG:        calc_corr,
+    const.D_CORR2_FLAG:     calc_dcorr2,
+    const.STD_FLAG:         calc_std,
+    const.NORM_STD_FLAG:    calc_norm_std,
+    const.D_STD2_FLAG:      calc_dstd2,
+    const.NORM_D_STD2_FLAG: calc_norm_dstd2
 }
 
 #------------ Cap ------------
-def get_cap_measure(sky_pix:pix_data, **kwargs):
+def get_cap_measure(sky_pix:PixMap, **kwargs):
     '''-> keyword arguments: \n
     measure_flag - nmeasure_samples - measure_range\n
     ngeom_samples - geom_range\n
     ndata_chunks'''
 
-    min_pix_ratio  = kwargs.get('min_pix_ratio', 1)
-    measure_flag  = kwargs.get('measure_flag', const.STD_FLAG)
-    geom_range    = kwargs.get('geom_range', default_range)
-    kwargs['full_integral'] = calc_corr_full_integral(sky_pix, **kwargs)
-    measure_func            = func_dict[measure_flag]
-    measure_results         = np.zeros(len(geom_range))
+    min_pix_ratio   = kwargs.get('min_pix_ratio', 1)
+    measure_flag    = kwargs.get('measure_flag', const.STD_FLAG)
+    geom_range      = kwargs.get('geom_range', default_range)
+    kwargs['corr_full_integral'] = calc_corr_full_integral(sky_pix, **kwargs)
+    kwargs['std_full'] = calc_std(sky_pix, None, **kwargs)
+    # measure
+    measure_func    = func_dict[measure_flag]
+    measure_results = np.zeros(len(geom_range))
     for i, ca in enumerate(geom_range):
         # print("- Cap size: {} degrees\r".format(ca), end = "")
         top, bottom = sky_pix.get_top_bottom_caps(ca)
         kwargs['max_valid_ang'] = np.minimum(ca, 180 - ca)
         # Remove invalid pixels
-        if top.get_valid_pixel_ratio() < min_pix_ratio:
+        if top.get_visible_pixels_ratio() < min_pix_ratio:
             measure_results[i] = np.nan
             continue
         elif measure_flag in (const.D_CORR2_FLAG, const.D_STD2_FLAG) and \
-                bottom.get_valid_pixel_ratio() < min_pix_ratio:
+                bottom.get_visible_pixels_ratio() < min_pix_ratio:
             measure_results[i] = np.nan
             continue
         measure_results[i] = measure_func(top, bottom, **kwargs)
@@ -127,7 +138,7 @@ def get_strip_limits(strip_thickness, geom_range):
     return strip_starts, geom_range, strip_ends
 
 
-def get_strip_measure(sky_pix:pix_data, **kwargs):
+def get_strip_measure(sky_pix:PixMap, **kwargs):
     '''keyword arguments: \n
     sampling_range - strip_thickness - measure_flag -\n
     nmeasure_samples - cutoff_ratio - ndata_chunks
@@ -138,8 +149,8 @@ def get_strip_measure(sky_pix:pix_data, **kwargs):
     measure_flag    = kwargs.get('measure_flag', const.STD_FLAG)
     geom_range      = kwargs.get('geom_range', default_range)
     strip_starts, strip_centers, strip_ends = get_strip_limits(strip_thickness, geom_range)
-    kwargs['full_integral'] = calc_corr_full_integral(sky_pix, **kwargs)
-    
+    kwargs['corr_full_integral'] = calc_corr_full_integral(sky_pix, **kwargs)
+    kwargs['std_full'] = calc_std(sky_pix, None, **kwargs)
     # measure
     measure_func = func_dict[measure_flag]
     measure_results = np.zeros(len(geom_range))
@@ -149,11 +160,11 @@ def get_strip_measure(sky_pix:pix_data, **kwargs):
         end   = strip_ends[i]
         strip, rest_of_sky = sky_pix.get_strip(start, end)
         # Remove invalid pixels
-        if strip.get_valid_pixel_ratio() < min_pix_ratio:
+        if strip.get_visible_pixels_ratio() < min_pix_ratio:
             measure_results[i] = np.nan
             continue
         elif measure_flag in (const.D_CORR2_FLAG, const.D_STD2_FLAG) and \
-                rest_of_sky.get_valid_pixel_ratio() < min_pix_ratio:
+                rest_of_sky.get_visible_pixels_ratio() < min_pix_ratio:
             measure_results[i] = np.nan
             continue
         ang   = np.maximum(start, end)

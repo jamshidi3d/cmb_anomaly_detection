@@ -102,7 +102,7 @@ np.savetxt(fpath + "_sampling_range.txt", _inputs.get('geom_range'))
 # ------ Simulations -------
 if do_compute_sims:
     print("Computing measure for simulations")
-    sim_pos     = cau.map_reader.read_pos(_inputs['nside'])
+    sim_pos     = cau.file_reader.read_pos(_inputs['nside'])
     sim_mask    = rmp.get_mask(**_inputs)
 
     sims_internal_measure = np.zeros((max_sim_num, len(geom_range)))
@@ -114,6 +114,15 @@ if do_compute_sims:
 
     for sim_num, fname in enumerate(file_list):
         print(f"{sim_num}/{max_sim_num - 1}\r", end='')
+        # Create data
+        try:
+            sim_temp = cau.file_reader.read_txt_attr(sims_path, 'T', sim_num)
+        except:
+            print("simulation number {:05} is currupted!".format(sim_num))
+            continue
+        sim_temp            -= np.mean(sim_temp)
+        sim_pd              = cau.dtypes.PixMap(sim_temp, sim_pos, sim_mask)
+        # Align to MAC
         fpath = sims_cap_anom_path + fname
         all_dir_cap_anom = np.loadtxt(fpath)
         # Set pole
@@ -122,15 +131,6 @@ if do_compute_sims:
                                 all_dir_cap_anom,
                                 cap_size_for_finding_dir,
                                 dir_cap_geom_range)
-        # Create data
-        try:
-            sim_temp = cau.map_reader.get_sim_attr(sims_path, 'T', sim_num)
-        except:
-            print("simulation number {:05} is currupted!".format(sim_num))
-            continue
-        sim_temp            -= np.mean(sim_temp)
-        sim_pd              = cau.dtypes.pix_data(sim_temp, sim_pos, sim_mask)
-        # Align to MAC
         mac_aligned_pos     = cau.coords.rotate_pole_to_north(sim_pos, _inputs['pole_lat'], _inputs['pole_lon'])
         sim_pd.raw_pos      = mac_aligned_pos
         # Compute measure

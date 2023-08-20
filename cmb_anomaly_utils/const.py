@@ -2,12 +2,14 @@
 CAP_FLAG            = 'CAP'
 STRIP_FLAG          = 'STRIP'
 # measure flags
-D_CORR2_FLAG        = 'DCORR2'
-D_STD2_FLAG         = 'DSTD2'
 CORR_FLAG           = 'CORR'
+D_CORR2_FLAG        = 'DCORR2'
 STD_FLAG            = 'STD'
+NORM_STD_FLAG       = 'NORM_STD'
+D_STD2_FLAG         = 'DSTD2'
+NORM_D_STD2_FLAG    = 'NORM_D_STD2'
 MEAN_FLAG           = 'MEAN'
-# observable flags
+# observables
 T                   = 'T'
 U                   = 'U'
 Q                   = 'Q'

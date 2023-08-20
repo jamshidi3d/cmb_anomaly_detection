@@ -1,21 +1,25 @@
 import numpy as np
-import json
 
-from .coords import angle_to_z
-from . import math_utils as mu
+from . import coords, math_utils as mu
 
-
-class pix_data:
-    def __init__(self, data:np.ndarray, pos:np.ndarray, raw_mask:np.ndarray = None):
-        self.raw_data = data
-        self.raw_pos = pos
-        self.raw_mask = None if raw_mask is None else np.array(raw_mask, dtype=bool)
+class PixMap:
+    def __init__(self, data:np.ndarray,
+                 pos:np.ndarray,
+                 mask:np.ndarray = None,
+                 pole_lat = 90,
+                 pole_lon = 0):
+        self.raw_data = np.copy(data)
+        self.raw_pos  = np.copy(pos)
+        self.mask = None if mask is None else np.array(mask, dtype=bool)
+        self.pole_lat = pole_lat
+        self.pole_lon = pole_lon
     
+    # ------ property methods ------
     @property
     def data(self):
-        if not self.raw_mask is None:
-            screen = self.get_pixel_screen()
-            return self.raw_data[screen]
+        if not self.mask is None:
+            vis_filter = self.get_pixels_visibility()
+            return self.raw_data[vis_filter]
         return self.raw_data
     
     @data.setter
@@ -24,59 +28,69 @@ class pix_data:
 
     @property
     def pos(self):
-        if not self.raw_mask is None:
-            screen = self.get_pixel_screen()
-            return self.raw_pos[screen]
+        if not self.mask is None:
+            vis_filter = self.get_pixels_visibility()
+            return self.raw_pos[vis_filter]
         return self.raw_pos
 
     @pos.setter
     def pos(self, value):
         self.raw_pos = value
 
+    # ------ pixel extraction methods ------
     def copy(self):
-        return pix_data(np.copy(self.raw_data), np.copy(self.raw_pos), np.copy(self.raw_mask))
+        return PixMap(np.copy(self.raw_data),
+                      np.copy(self.raw_pos),
+                      np.copy(self.mask),
+                      self.pole_lat,
+                      self.pole_lon)
     
-    def extract_selection(self, selection) -> "pix_data":
-        _raw_mask = None if self.raw_mask is None else self.raw_mask[selection]
-        return pix_data(self.raw_data[selection],
-                        self.raw_pos[selection],
-                        _raw_mask)
+    def extract_selection(self, selection) -> "PixMap":
+        selection_mask = None if self.mask is None else self.mask[selection]
+        return PixMap(self.raw_data[selection],
+                      self.raw_pos[selection],
+                      selection_mask,
+                      self.pole_lat,
+                      self.pole_lon)
 
-    def get_pixel_screen(self):
-        _mask = np.logical_not(self.raw_mask)
-        # swapping ON and OFF, because _mask is True in masked areas and False in data area
-        screen = (_mask == False)
-        return screen
+    # ------ pixel visibility methods ------
+    def get_pixels_visibility(self):
+        vis_filter = (self.mask == False)
+        return vis_filter
 
-    def get_valid_pixel_ratio(self):
-        if self.raw_mask is None:
+    def get_visible_pixels_ratio(self):
+        if self.mask is None:
             return 1.0
-        screen = self.get_pixel_screen()
-        return np.sum(screen) / len(screen)
+        vis_filter = self.get_pixels_visibility()
+        return np.sum(vis_filter) / len(vis_filter)
 
-    def get_top_bottom_caps(self, cap_angle):
-        z_cap_border     = angle_to_z(cap_angle)
-        # top cap
-        top_selection    = self.raw_pos[:, 2] > z_cap_border
-        top_cap          = self.extract_selection(top_selection)
-        # bottom cap
-        bottom_selection = np.logical_not(top_selection)
-        bottom_cap       = self.extract_selection(bottom_selection)
-        return top_cap, bottom_cap
+    # ------ pole methods ------
+    def reset_pole(self):
+        original_plat = self.pole_lat
+        original_plon = 180 + self.pole_lon
+        self.pos = coords.rotate_pole_to_north(self.raw_pos,
+                                               original_plat,
+                                               original_plon)
+        self.pole_lat, self.pole_lon = 90, 0
 
-    def get_strip(self, start_angle, stop_angle):
-        '''returns a strip between given angles and the rest of sky\n
-        start and stop angles have to be in degrees'''
-        z_start         = angle_to_z(start_angle)
-        z_stop          = angle_to_z(stop_angle)
-        strip_selection = (z_start >= self.raw_pos[:, 2]) * (self.raw_pos[:, 2] >= z_stop)
-        strip           = self.extract_selection(strip_selection)
-        r_o_s_selection = np.logical_not(strip_selection)
-        rest_of_sky     = self.extract_selection(r_o_s_selection)
-        return strip, rest_of_sky
+    def set_pole(self, pole_lat, pole_lon):
+        self.pos = coords.rotate_pole_to_north(self.raw_pos,
+                                               pole_lat,
+                                               pole_lon)
+        self.pole_lat, self.pole_lon = pole_lat, pole_lon
+
+    def change_pole(self, pole_lat, pole_lon):
+        self.reset_pole()
+        self.set_pole(pole_lat, pole_lon)
+
+    def align_pole_to_mac(all_dir_cap_anom = None, selected_cap_size = 30):
+        if all_dir_cap_anom is None:
+            return
+
+    # ------ modulation methods ------
+    def add_modulation(self, pix_mod_arr):
+        self.raw_data *= pix_mod_arr
     
     def add_legendre_modulation(self, a_l):
-        # in legendre polynomials z = cos(theta) is used
-        z = self.raw_pos[:, 2]
-        legendre_on_pix = np.array([a_l[i] * mu.legendre(i, z) for i in range(1, len(a_l))])
-        self.raw_data *= (1 + np.sum(legendre_on_pix, axis = 0))
+        _modulation = mu.create_legendre_modulation_factor(self.raw_pos, a_l)
+        self.add_modulation(_modulation)

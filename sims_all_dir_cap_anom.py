@@ -9,7 +9,7 @@ import healpy as hp
 
 import read_cmb_maps_params as rmp
 import cmb_anomaly_utils as cau
-from cmb_anomaly_utils.dtypes import pix_data
+from cmb_anomaly_utils.dtypes import PixMap
 
 sims_path = './input/commander_sims/'
 
@@ -44,7 +44,7 @@ dir_lon, dir_lat = hp.pix2ang(dir_nside, np.arange(npix), lonlat = True)
 
 # Positions and mask
 print("finding direction for simulations")
-sim_pos     = cau.map_reader.read_pos(_inputs['nside'])
+sim_pos     = cau.file_reader.read_pos(_inputs['nside'])
 sim_mask    = rmp.get_mask(**_inputs)
 
 mask_txt    = "masked" if _inputs['is_masked'] else "inpainted"
@@ -52,13 +52,13 @@ mask_txt    = "masked" if _inputs['is_masked'] else "inpainted"
 for sim_num in range(max_sim_num):
     print(f'sim number {sim_num:04}')
     try:
-        sim_temp = cau.map_reader.get_sim_attr(sims_path, 'T', sim_num)
+        sim_temp = cau.file_reader.read_txt_attr(sims_path, 'T', sim_num)
     except:
         print("simulation number {:05} is currupted!".format(sim_num))
         continue
     sim_temp         *= 10**6
-    sim_pix_data     = cau.dtypes.pix_data(sim_temp, np.copy(sim_pos), sim_mask)
-    cmb_all_dir_anom = cau.measure.calc_measure_in_all_dir(sim_pix_data, dir_lat, dir_lon, **_inputs)
+    sim_pix_map     = cau.dtypes.PixMap(sim_temp, np.copy(sim_pos), sim_mask)
+    cmb_all_dir_anom = cau.measure.calc_measure_in_all_dir(sim_pix_map, dir_lat, dir_lon, **_inputs)
     
     fname   = f"sim{sim_num:04}_{mask_txt}_all_dir_cap_anom.txt"
     np.savetxt(f"./output/" + fname, cmb_all_dir_anom)

@@ -18,13 +18,13 @@ def get_inputs() -> dict:
     return _inputs
 
 def get_cmb_pixdata(**kwargs):
-    sky_pix = cau.map_reader.get_data_pix_from_cmb(cmb_fpath, mask_fpath, **kwargs)
+    sky_pix = cau.file_reader.get_pix_map_from_cmb(cmb_fpath, mask_fpath, **kwargs)
     return sky_pix
 
 def get_mask(**kwargs):
     if not kwargs.get('is_masked', False):
         return None
-    mask = cau.map_reader.read_mask(mask_fpath, kwargs.get('nside', 64))
+    mask = cau.file_reader.read_fits_mask(mask_fpath, kwargs.get('nside', 64))
     return mask
 
 class bcolors:

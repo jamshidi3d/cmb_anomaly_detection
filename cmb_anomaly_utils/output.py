@@ -6,10 +6,10 @@ from . import const
 
 def get_output_path(**kwargs):
     '''inputs:\n
-    measure_flag - observable_flag - nside - is_masked - geom_flag - dtheta'''
+    measure_flag - observable - nside - is_masked - geom_flag - dtheta'''
     measure_flag = kwargs['measure_flag']
     output_fpath = "./output/"
-    output_fpath += "{}".format(kwargs['observable_flag'])
+    output_fpath += "{}".format(kwargs['observable'])
     output_fpath += "_{}".format(kwargs['nside'])
     output_fpath += "_{}".format("masked" if kwargs['is_masked'] else "inpainted")
     output_fpath += "_{}".format("cap" if kwargs['geom_flag'] == const.CAP_FLAG else "{}strip".format(kwargs['strip_thickness']))
@@ -59,7 +59,7 @@ def get_plot_fig(measure_result, **kwargs):
 
 #---------- TeX style string generators ----------
 def get_measure_tex(**kwargs):
-    obs, measure_flag, geom_flag = kwargs['observable_flag'], kwargs['measure_flag'], kwargs['geom_flag']
+    obs, measure_flag, geom_flag = kwargs['observable'], kwargs['measure_flag'], kwargs['geom_flag']
     double_obs = '{'+ obs + obs +'}'
     # TeX style titles
     if kwargs['measure_flag'] == const.D_CORR2_FLAG:
@@ -99,9 +99,9 @@ def get_ylabel_tex(**kwargs):
     ylabel = get_measure_tex(**kwargs)
     ylabel += r'$\>\>\>\>$'
     if kwargs['measure_flag'] == const.STD_FLAG:
-        ylabel += r'$[{unit}]$'.format(unit = unit_dict[kwargs['observable_flag']])
+        ylabel += r'$[{unit}]$'.format(unit = unit_dict[kwargs['observable']])
     elif kwargs['measure_flag'] == const.D_CORR2_FLAG:
-        ylabel += r'$[{unit}]^4$'.format(unit = unit_dict[kwargs['observable_flag']])
+        ylabel += r'$[{unit}]^4$'.format(unit = unit_dict[kwargs['observable']])
     elif kwargs['measure_flag'] == const.CORR_FLAG:
         pass
     return ylabel

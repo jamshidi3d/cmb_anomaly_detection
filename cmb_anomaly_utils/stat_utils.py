@@ -2,7 +2,7 @@ import numpy as np
 import concurrent.futures
 from numba import njit, prange
 
-from .dtypes import pix_data
+from .dtypes import PixMap
 from . import const
 
 @njit(fastmath = True)
@@ -13,19 +13,9 @@ def clamp(x, x_min = -1, x_max = 1):
         return x_max - const.THRESHOLD
     return x
 
-def get_measure_range(**kwargs):
-    measure_start   = kwargs.get('measure_start', 0)
-    measure_stop    = kwargs.get('measure_stop', 180)
-    nsamples        = kwargs.get('nmeasure_samples', 181)
-    return np.linspace(measure_start, measure_stop, nsamples)
-
-def get_geom_range(**kwargs):
-    '''kwargs ->\n
-    geom_start, geom_stop, ngeom_samples'''
-    geom_start      = kwargs.get('geom_start', 0)
-    geom_stop       = kwargs.get('geom_stop', 180)
-    nsamples        = kwargs.get('ngeom_samples', 181)
-    return np.linspace(geom_start, geom_stop, nsamples)
+def get_range(start, stop, dsamples):
+    nsamples = 1 + int(np.abs((stop - start) / dsamples))
+    return np.linspace(start, stop, nsamples)
 
 def get_extended_range(sampling_range, new_start = 0, new_stop = 180):
     new_len = new_stop - new_start
@@ -37,11 +27,11 @@ def find_nearest_index(arr, val):
     return np.nanargmin(np.abs(arr - val))
 
 #----------- Parallel -----------
-def get_chunk(pdata:pix_data, block_size, block_num):
+def get_chunk(pix_map:PixMap, block_size, block_num):
     start_i = block_num * block_size
     end_i   = (block_num + 1) * block_size
-    _data   = pdata.data[start_i : end_i]
-    _pos    = pdata.pos[start_i : end_i]
+    _data   = pix_map.data[start_i : end_i]
+    _pos    = pix_map.pos[start_i : end_i]
     return _data, _pos
 
 @njit(fastmath = True)
@@ -62,23 +52,23 @@ def two_blocks_correlation(data1:np.ndarray, pos1:np.ndarray,
             corr_n[1, index] += 1
     return corr_n
 
-def parallel_correlation(pdata:pix_data, **kwargs):
+def parallel_correlation(pix_map:PixMap, **kwargs):
     ndata_chunks        = kwargs.get('ndata_chunks', 4)
     nmeasure_samples    = kwargs.get('nmeasure_samples', 181)
-    mode                = kwargs.get('2pcf_mode', const.TT_2PCF)
-    if len(pdata.data) == 0:
+    mode                = kwargs.get('tpcf_mode', const.TT_2PCF)
+    if len(pix_map.data) == 0:
         return 0
-    _pdata = pdata.copy()
+    _pix_map = pix_map.copy()
     if mode == const.TT_2PCF:
-        _pdata.data = _pdata.data - np.mean(_pdata.data)
-    chunk_size = round(len(_pdata.data) / ndata_chunks)
+        _pix_map.data = _pix_map.data - np.mean(_pix_map.data)
+    chunk_size = round(len(_pix_map.data) / ndata_chunks)
     # print("- Chunk size: {}".format(chunk_size))
     processes = []
     with concurrent.futures.ProcessPoolExecutor() as exec:
         for i in range(ndata_chunks):
-            data1, pos1 = get_chunk(_pdata, chunk_size, i)
+            data1, pos1 = get_chunk(_pix_map, chunk_size, i)
             for j in range(i, ndata_chunks):
-                data2, pos2 = get_chunk(_pdata, chunk_size, j)
+                data2, pos2 = get_chunk(_pix_map, chunk_size, j)
                 is_same = i==j
                 processes.append(\
                     exec.submit(\
@@ -95,18 +85,18 @@ def parallel_correlation(pdata:pix_data, **kwargs):
 
 
 #------------- Linear -------------
-def correlation(pdata:pix_data, n_samples = 180, mode = const.TT_2PCF):
-    _pdata = pdata.copy()
+def correlation(pix_map:PixMap, n_samples = 180, mode = const.TT_2PCF):
+    _pix_map = pix_map.copy()
     corr = np.zeros(n_samples)
     count = np.zeros(n_samples, dtype = np.int_)
     if mode == const.TT_2PCF:
-        _pdata.data = _pdata.data - np.mean(_pdata.data)
-    for i in range(len(_pdata.data)):
-        for j in range(i, len(_pdata.data)):
-            cos_th = np.dot(_pdata.pos[i], _pdata.pos[j])
+        _pix_map.data = _pix_map.data - np.mean(_pix_map.data)
+    for i in range(len(_pix_map.data)):
+        for j in range(i, len(_pix_map.data)):
+            cos_th = np.dot(_pix_map.pos[i], _pix_map.pos[j])
             angle = np.arccos(np.clip(cos_th, -1, 1))
             index = int(n_samples * angle / np.pi)
-            corr[index] += _pdata.data[i] * _pdata.data[j]
+            corr[index] += _pix_map.data[i] * _pix_map.data[j]
             count[index] += 1
     count[count == 0] = 1
     return corr / count
@@ -120,14 +110,14 @@ def fast_std(arr):
 def fast_mean(arr):
     return np.mean(arr)
 
-def std_pix_data(pdata:pix_data):
-    _data = pdata.data
+def std_map(pix_map:PixMap):
+    _data = pix_map.data
     if len(_data) == 0:
         return 0
     return fast_std(_data)
 
-def mean_pix_data(pdata:pix_data):
-    _data = pdata.data
+def mean_map(pix_map:PixMap):
+    _data = pix_map.data
     if len(_data) == 0:
         return 0
     return np.mean(_data)

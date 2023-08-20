@@ -3,7 +3,7 @@ import healpy as hp
 import numpy as np
 
 from . import math_utils as mu
-from . import map_reader
+from . import file_reader
 
 def fill_map_with_cap(data_map, pole_lat, pole_lon, cap_size, fake_poles):
     nside = int(np.sqrt(len(data_map) / 12))
@@ -30,11 +30,3 @@ def fill_map_with_cap(data_map, pole_lat, pole_lon, cap_size, fake_poles):
         filled_map[ipix_disc] = map_rotated[ipix_disc]
         mask[ipix_disc] = False
     return filled_map, mask
-
-
-def create_legendre_modulation_factor(pos_arr, a_l):
-        '''Generates the factor to be multiplied by map'''
-        # in legendre polynomials z = cos(theta) is used
-        z = pos_arr[:, 2]
-        legendre_on_pix = np.array([a_l[i] * mu.legendre(i, z) for i in range(1, len(a_l))])
-        return (1 + np.sum(legendre_on_pix, axis = 0))

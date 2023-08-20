@@ -1,9 +1,11 @@
 import numpy as np
+import healpy as hp
+
 from . import const
 
+# ------- vector calculus methods -------
 def angle_to_z(angle):
     return np.cos(angle * np.pi / 180)
-
 
 def convert_polar_to_xyz(lat_ndarray, lon_ndarray):
     theta, phi = np.radians(90 - lat_ndarray), np.radians(lon_ndarray)
@@ -56,3 +58,27 @@ def rotate_pole_to_north(vec_ndarray, pole_lat, pole_lon):
     axis_length = np.sqrt(np.dot(axis, np.transpose(axis)))
     axis /= axis_length
     return rotate_angle_axis(vec_ndarray, angle, axis)
+
+# ------- healpix methods -------
+def get_nside(npix):
+    return int(np.sqrt(npix / 12))
+
+def get_npix(nside):
+    return 12 * nside * nside
+
+def get_healpix_xyz(nside = 64):
+    npix     = np.arange(12 * nside **2)
+    lon, lat = hp.pix2ang(nside, npix, lonlat = True)
+    pos = convert_polar_to_xyz(lat, lon)
+    return pos
+
+def get_healpix_latlon(ndir):
+    dir_nside = get_nside(ndir)
+    dir_lon, dir_lat = hp.pix2ang(dir_nside, np.arange(ndir), lonlat = True)
+    return dir_lat, dir_lon
+
+def get_pix_by_ang(nside, lat, lon):
+    pix_index = hp.pixelfunc.ang2pix(nside = nside,
+                                     theta = np.radians(90 - lat),
+                                     phi   = np.radians(lon))
+    return pix_index

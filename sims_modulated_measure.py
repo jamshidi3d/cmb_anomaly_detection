@@ -21,7 +21,7 @@ import matplotlib
 
 import cmb_anomaly_utils as cau
 import read_cmb_maps_params as rmp
-from cmb_anomaly_utils.dtypes import pix_data
+from cmb_anomaly_utils.dtypes import PixMap
 from cmb_anomaly_utils import math_utils as mu
 
 sims_path = './input/commander_sims/'
@@ -54,19 +54,19 @@ geom_range = _inputs['geom_range']
 def get_modulated_measure_from_sim(sim_num, modulation_factor):
     print(f'sim number {sim_num:04} \r', end='')
     try:
-        sim_temp = cau.map_reader.get_sim_attr(sims_path, 'T', sim_num)
+        sim_temp = cau.file_reader.read_txt_attr(sims_path, 'T', sim_num)
     except:
         print("simulation number {:05} is currupted!".format(sim_num))
         return None
-    sim_pix_data        = cau.dtypes.pix_data(sim_temp, np.copy(sim_pos))
-    sim_pix_data.data  *= modulation_factor
-    sim_measure_results = cau.measure.get_strip_measure(sim_pix_data , **_inputs)
+    sim_pix_map        = cau.dtypes.PixMap(sim_temp, np.copy(sim_pos))
+    sim_pix_map.data  *= modulation_factor
+    sim_measure_results = cau.measure.get_strip_measure(sim_pix_map , **_inputs)
     return sim_measure_results
 
 
 # take legendre expansion of cmb first
-cmb_pix_data        = rmp.get_cmb_pixdata(**_inputs)
-cmb_measure_results = cau.measure.get_strip_measure(cmb_pix_data , **_inputs)
+cmb_pix_map        = rmp.get_cmb_pixdata(**_inputs)
+cmb_measure_results = cau.measure.get_strip_measure(cmb_pix_map , **_inputs)
 
 # convert degree to radians to compute legendre coeffs
 cmb_a_l = mu.get_all_legendre_modulation(geom_range * np.pi / 180, cmb_measure_results, max_l)
@@ -77,7 +77,7 @@ _inputs['measure_flag'] = measure_to_look
 
 sims_a_l        = np.zeros((max_sim_num, max_l + 1))
 sims_results    = np.zeros((max_sim_num, len(geom_range)))
-sim_pos         = cau.map_reader.read_pos(_inputs['nside'])
+sim_pos         = cau.file_reader.read_pos(_inputs['nside'])
 
 # modulate each l separately
 if mod_mode == SINGLE_L_MODE:
@@ -88,7 +88,7 @@ if mod_mode == SINGLE_L_MODE:
         single_cmb_a_l[nonzero_l + 1:] = 0
         
         # single l factor
-        modulation_factor = cau.map_filler.create_legendre_modulation_factor(sim_pos, single_cmb_a_l)
+        modulation_factor = cau.math_utils.create_legendre_modulation_factor(sim_pos, single_cmb_a_l)
         for sim_num in range(max_sim_num):
             sim_measure_results = get_modulated_measure_from_sim(sim_num, modulation_factor)
             if sim_measure_results is None:
@@ -103,7 +103,7 @@ if mod_mode == SINGLE_L_MODE:
 
 # all l's at the same time
 if mod_mode == ALL_L_MODE:
-    modulation_factor = cau.map_filler.create_legendre_modulation_factor(sim_pos, cmb_a_l)
+    modulation_factor = cau.math_utils.create_legendre_modulation_factor(sim_pos, cmb_a_l)
     for sim_num in range(max_sim_num):
         sim_measure_results = get_modulated_measure_from_sim(sim_num, modulation_factor)
         if sim_measure_results is None:
