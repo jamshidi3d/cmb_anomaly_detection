@@ -11,7 +11,7 @@ def get_normalized_to_mean(arr):
     _norm = arr if _mean == 0 else arr / _mean
     return _norm
 
-#--------------legendre utils----------------
+# --------- legendre utils ---------
 
 def legendre(n, x):
     return np.polynomial.Legendre.basis(n)(x)
@@ -44,8 +44,7 @@ def create_legendre_modulation_factor(pos_arr, a_l):
     legendre_on_pix = np.array([a_l[i] * legendre(i, z) for i in range(1, len(a_l))])
     return (1 + np.sum(legendre_on_pix, axis = 0))
 
-#--------------extrapolation----------------
-
+#--------- extrapolation ---------
 def extrapolate_curve(x, y, extended_x, curve_type='clamped', deriv=0):
     '''gives extrapolated y-values\n
     types are: 'not-a-knot' - 'natural' - 'clamped' '''

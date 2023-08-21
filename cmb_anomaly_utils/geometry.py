@@ -1,6 +1,6 @@
 import numpy as np
 
-from . import coords
+from . import const, coords, stat_utils as su
 from .dtypes import PixMap
 
 def get_top_bottom_caps(pix_map: PixMap, cap_angle):
@@ -24,8 +24,18 @@ def get_strip(pix_map:PixMap, start_angle, stop_angle):
     rest_of_sky     = pix_map.extract_selection(r_o_s_selection)
     return strip, rest_of_sky
 
-def get_caps_on_range(sky_pix_map, geom_range):
-    pass
-
-def get_strips_on_range(sky_pix_map, strip_thickness, geom_range):
-    pass
+def get_strip_limits(**kwargs):
+    strip_thickness = kwargs.get(const.KEY_STRIP_THICKNESS, 20)
+    geom_range      = kwargs.get(const.KEY_GEOM_RANGE, su.get_range())
+    def clamp_to_sphere_degree(value):
+        return 180 / np.pi * np.arccos(np.clip(value, -1, 1))
+    height          = 1 - np.cos(strip_thickness * np.pi / 180)
+    strip_mid_locs  = np.cos(geom_range * np.pi / 180)
+    # strip starts
+    top_lim         = strip_mid_locs + height / 2
+    strip_starts    = clamp_to_sphere_degree(top_lim)
+    # strip ends
+    bottom_lim      = strip_mid_locs - height / 2
+    strip_ends      = clamp_to_sphere_degree(bottom_lim)
+    strip_centers   = np.copy(geom_range)
+    return strip_starts, strip_centers, strip_ends

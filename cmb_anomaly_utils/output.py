@@ -16,7 +16,7 @@ def get_output_path(**kwargs):
     output_fpath += "_{}".format("dcorr2" if measure_flag == const.D_CORR2_FLAG else \
                                 "dstd2" if measure_flag == const.D_STD2_FLAG else \
                                 "std" if measure_flag == const.STD_FLAG else \
-                                "corr" if measure_flag == const.CORR_FLAG else "mean")
+                                "corr" if measure_flag == const.NORM_CORR_FLAG else "mean")
     # output_fpath += "_{}dtheta".format(kwargs['dtheta'])
     return output_fpath
 
@@ -65,7 +65,7 @@ def get_measure_tex(**kwargs):
     if kwargs['measure_flag'] == const.D_CORR2_FLAG:
         captitle = r'$\int [C_{double_obs}^{{top}}(\gamma) - C_{double_obs}^{{bottom}}(\gamma)]^2 d\gamma$'.format(double_obs = double_obs)
         strtitle = r'$\int [C_{double_obs}^{{strip}}(\gamma) - C_{double_obs}^{{rest\,of\,sky}}(\gamma)]^2 d\gamma$'.format(double_obs = double_obs)
-    elif measure_flag == const.CORR_FLAG:
+    elif measure_flag == const.NORM_CORR_FLAG:
         captitle = r'$\frac {{ \int [C_{double_obs}^{{top}}(\gamma)]^2 d\gamma }} {{ \int [C_{double_obs}^{{total}}(\gamma)]^2 d\gamma }}  - 1$'.format(double_obs = double_obs)
         strtitle = r'$\frac {{ \int [C_{double_obs}^{{strip}}(\gamma)]^2 d\gamma }} {{ \int [C_{double_obs}^{{total}}(\gamma)]^2 d\gamma }} - 1$'.format(double_obs = double_obs)
     elif measure_flag == const.D_STD2_FLAG:
@@ -102,7 +102,7 @@ def get_ylabel_tex(**kwargs):
         ylabel += r'$[{unit}]$'.format(unit = unit_dict[kwargs['observable']])
     elif kwargs['measure_flag'] == const.D_CORR2_FLAG:
         ylabel += r'$[{unit}]^4$'.format(unit = unit_dict[kwargs['observable']])
-    elif kwargs['measure_flag'] == const.CORR_FLAG:
+    elif kwargs['measure_flag'] == const.NORM_CORR_FLAG:
         pass
     return ylabel
 

@@ -67,7 +67,7 @@ def set_pole_along_mac(_inputs,
     _inputs['pole_lat'], _inputs['pole_lon'] = \
         cau.direction.find_dir_by_mac(
                                 all_dir_cap_anom,
-                                special_cap_size = cap_size_for_finding_dir,
+                                dir_cap_size = cap_size_for_finding_dir,
                                 geom_range  = dir_cap_geom_range,
                                 all_dir_lat = dir_lat,
                                 all_dir_lon = dir_lon)

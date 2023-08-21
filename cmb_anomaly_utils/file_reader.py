@@ -10,17 +10,16 @@ def read_txt_attr(fpath):
     attr_arr  = np.loadtxt(fpath)
     return attr_arr * 10**6
 
+def read_fits_attr(fpath, nside, field):
+    map = hp.read_map(fpath, field = field)
+    map = hp.ud_grade(map, nside_out=nside)
+    return map * 10**6
+
 def read_fits_mask(fpath, nside):
     mask = hp.read_map(fpath)
     mask = hp.ud_grade(mask, nside_out=nside)
     mask = np.logical_not(mask)
     return mask
-
-def read_fits_attr(fpath, nside, field):
-    map = hp.read_map(fpath, field = field, nest=True)
-    map = hp.ud_grade(map, nside_out=nside, order_in='NESTED')
-    map = hp.reorder(map, inp='NESTED', out='RING')
-    return map * 10**6
 
 def read_fits_temp(fpath, nside):
     '''returns inpainted temprature in mu.K units'''
@@ -54,34 +53,5 @@ fits_func_dict = {
     const.B_MODE : read_fits_b_mode,
 }
 
-
-class MapManager:
-    '''This class generates PixMap(s) that are used for cap and strip computation\n
-    - kwargs: \n
-    observable - nside - is_masked \n
-    sims_fpath - cmb_fpath - mask_fpath'''
-    def __init__(self, **kwargs):
-        self.observable     = kwargs.get('observable', const.T)
-        self.sims_fpath     = kwargs.get('sims_fpath', None)
-        self.sims_fnames    = os.listdir(self.sims_fpath)
-        self.cmb_fpath      = kwargs.get('cmb_fpath', None)
-        self.mask_fpath     = kwargs.get('mask_fpath', None)
-        self.nside          = kwargs.get('nside', 64)
-        self.is_masked      = kwargs.get('is_masked', False)
-        self.mask           = read_fits_mask(self.mask_fpath, self.nside) if self.is_masked else None
-        self.pos            = coords.get_healpix_xyz(self.nside)
-    
-    def create_cmb_map(self):
-        read_func   = fits_func_dict[self.observable]
-        _data       = read_func(self.cmb_fpath, self.nside)
-        return PixMap(_data, self.pos, self.mask)
-
-    def create_sim_map_from_txt(self, num):
-        fpathname  = self.sims_fpath + self.sims_fnames[num]
-        _data      = read_txt_attr(fpathname)
-        return PixMap(_data, self.pos, self.mask)
-    
-    # def create_sim_map_from_fits(num):
-    #     pass
 
 

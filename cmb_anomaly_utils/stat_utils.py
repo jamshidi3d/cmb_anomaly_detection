@@ -13,7 +13,7 @@ def clamp(x, x_min = -1, x_max = 1):
         return x_max - const.THRESHOLD
     return x
 
-def get_range(start, stop, dsamples):
+def get_range(start = 0, stop = 180, dsamples = 1):
     nsamples = 1 + int(np.abs((stop - start) / dsamples))
     return np.linspace(start, stop, nsamples)
 
@@ -26,8 +26,14 @@ def get_extended_range(sampling_range, new_start = 0, new_stop = 180):
 def find_nearest_index(arr, val):
     return np.nanargmin(np.abs(arr - val))
 
+def get_top_cut_filter(val_arr, top_ratio = 0.1):
+    '''val_arr (e.g. weight, measure)'''
+    _max, _min  = np.max(val_arr), np.min(val_arr)
+    _min_weight = _max - top_ratio * (_max - _min)
+    _filter     = val_arr > _min_weight
+    return _filter
 #----------- Parallel -----------
-def get_chunk(pix_map:PixMap, block_size, block_num):
+def get_chunk_pix_map(pix_map:PixMap, block_size, block_num):
     start_i = block_num * block_size
     end_i   = (block_num + 1) * block_size
     _data   = pix_map.data[start_i : end_i]
@@ -52,7 +58,7 @@ def two_blocks_correlation(data1:np.ndarray, pos1:np.ndarray,
             corr_n[1, index] += 1
     return corr_n
 
-def parallel_correlation(pix_map:PixMap, **kwargs):
+def parallel_correlation_pix_map(pix_map:PixMap, **kwargs):
     ndata_chunks        = kwargs.get('ndata_chunks', 4)
     nmeasure_samples    = kwargs.get('nmeasure_samples', 181)
     mode                = kwargs.get('tpcf_mode', const.TT_2PCF)
@@ -62,18 +68,16 @@ def parallel_correlation(pix_map:PixMap, **kwargs):
     if mode == const.TT_2PCF:
         _pix_map.data = _pix_map.data - np.mean(_pix_map.data)
     chunk_size = round(len(_pix_map.data) / ndata_chunks)
-    # print("- Chunk size: {}".format(chunk_size))
     processes = []
     with concurrent.futures.ProcessPoolExecutor() as exec:
         for i in range(ndata_chunks):
-            data1, pos1 = get_chunk(_pix_map, chunk_size, i)
+            data1, pos1 = get_chunk_pix_map(_pix_map, chunk_size, i)
             for j in range(i, ndata_chunks):
-                data2, pos2 = get_chunk(_pix_map, chunk_size, j)
+                data2, pos2 = get_chunk_pix_map(_pix_map, chunk_size, j)
                 is_same = i==j
                 processes.append(\
                     exec.submit(\
                         two_blocks_correlation, data1, pos1, data2, pos2, nmeasure_samples, is_same))
-                # print("- Process for data chunks \"{}\" and \"{}\" queued".format(i,j))
         results = np.array([proc.result() for proc in processes])
         corr_chunkpair   = results[:, 0]
         count_chunkpair  = results[:, 1]
@@ -85,7 +89,7 @@ def parallel_correlation(pix_map:PixMap, **kwargs):
 
 
 #------------- Linear -------------
-def correlation(pix_map:PixMap, n_samples = 180, mode = const.TT_2PCF):
+def correlation_pix_map(pix_map:PixMap, n_samples = 180, mode = const.TT_2PCF):
     _pix_map = pix_map.copy()
     corr = np.zeros(n_samples)
     count = np.zeros(n_samples, dtype = np.int_)
@@ -110,14 +114,14 @@ def fast_std(arr):
 def fast_mean(arr):
     return np.mean(arr)
 
-def std_map(pix_map:PixMap):
+def std_pix_map(pix_map:PixMap):
     _data = pix_map.data
     if len(_data) == 0:
         return 0
     return fast_std(_data)
 
-def mean_map(pix_map:PixMap):
+def mean_pix_map(pix_map:PixMap):
     _data = pix_map.data
     if len(_data) == 0:
         return 0
-    return np.mean(_data)
+    return fast_mean(_data)

@@ -1,6 +1,6 @@
 import numpy as np
 
-from . import coords, math_utils as mu
+from . import const, coords, math_utils as mu
 
 class PixMap:
     def __init__(self, data:np.ndarray,
@@ -65,27 +65,21 @@ class PixMap:
         return np.sum(vis_filter) / len(vis_filter)
 
     # ------ pole methods ------
-    def reset_pole(self):
-        original_plat = self.pole_lat
-        original_plon = 180 + self.pole_lon
-        self.pos = coords.rotate_pole_to_north(self.raw_pos,
-                                               original_plat,
-                                               original_plon)
-        self.pole_lat, self.pole_lon = 90, 0
-
     def set_pole(self, pole_lat, pole_lon):
         self.pos = coords.rotate_pole_to_north(self.raw_pos,
                                                pole_lat,
                                                pole_lon)
         self.pole_lat, self.pole_lon = pole_lat, pole_lon
 
+    def reset_pole(self):
+        if 90 - self.pole_lat >= const.ANG_THRESHOLD:
+            # Original north is gone to the same (Theta) and to (180 + Phi) of previous pole
+            self.set_pole(self.pole_lat, 180 + self.pole_lon)
+        self.pole_lat, self.pole_lon = 90, 0
+
     def change_pole(self, pole_lat, pole_lon):
         self.reset_pole()
         self.set_pole(pole_lat, pole_lon)
-
-    def align_pole_to_mac(all_dir_cap_anom = None, selected_cap_size = 30):
-        if all_dir_cap_anom is None:
-            return
 
     # ------ modulation methods ------
     def add_modulation(self, pix_mod_arr):
