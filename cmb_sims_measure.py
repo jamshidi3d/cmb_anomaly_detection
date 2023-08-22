@@ -19,9 +19,9 @@ run_inputs.geom_flag            = cau.const.STRIP_FLAG
 run_inputs.measure_flag         = cau.const.NORM_STD_FLAG
 run_inputs.nside                = 64
 run_inputs.dir_nside            = 16
-run_inputs.geom_start           = 10
-run_inputs.geom_stop            = 90
-run_inputs.delta_geom_samples   = 5
+run_inputs.geom_start           = 0
+run_inputs.geom_stop            = 180
+run_inputs.delta_geom_samples   = 1
 run_inputs.strip_thickness      = 20
 run_inputs.pole_lat             = -10
 run_inputs.pole_lon             = 221
@@ -30,7 +30,8 @@ map_gen     = cau.run_utils.MapGenerator(**run_inputs.to_kwargs())
 
 all_dir_lat, all_dir_lon = cau.coords.get_healpix_latlon(run_inputs.dir_nside)
 
-dir_cap_sizes = cau.stat_utils.get_range(20, 70, 10)
+dir_cap_sizes   = cau.stat_utils.get_range(20, 70, 10)
+dir_geom_range  = cau.stat_utils.get_range(10, 90, 5)
 
 print("Computing CMB measures")
 
@@ -40,7 +41,7 @@ for i, dcs in enumerate(dir_cap_sizes):
     cau.direction.align_pole_to_mac(cmb_map,
                                     all_dir_cap_anom,
                                     dcs,
-                                    run_inputs.geom_range,
+                                    dir_geom_range,
                                     all_dir_lat,
                                     all_dir_lon)
     _result = cau.measure.get_measure(cmb_map, **run_inputs.to_kwargs())
@@ -64,7 +65,7 @@ for sim_num in range(max_sim_num):
         cau.direction.align_pole_to_mac(sim_map,
                                         all_dir_cap_anom,
                                         dcs,
-                                        run_inputs.geom_range,
+                                        dir_geom_range,
                                         all_dir_lat,
                                         all_dir_lon)
         _result = cau.measure.get_measure(sim_map, **run_inputs.to_kwargs())
