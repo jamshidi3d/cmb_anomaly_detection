@@ -8,6 +8,10 @@ def angle_to_z(angle_deg):
     return np.cos(np.radians(angle_deg))
 
 # ------- 2D Spherical methods -------
+def convert_polar_to_spherical(lat, lon):
+    theta, phi = np.deg2rad(90 - lat), np.deg2rad(lon)
+    return theta, phi
+
 def get_angle_dist_polar(lat1, lon1, lat2, lon2):
     '''returns in Degrees'''
     v1, v2 = convert_polar_to_xyz(  np.array([lat1, lat2]),
@@ -29,14 +33,13 @@ def average_dir_by_zphi(dir_lat : np.ndarray, dir_lon : np.ndarray):
     lat_mean = np.arccos(z_mean)
     return lat_mean, lon_mean
 
-def average_dir_by_xyz(dir_lat : np.ndarray, dir_lon : np.ndarray):
+def average_dir_by_xyz(dir_lat : np.ndarray, dir_lon : np.ndarray, dir_weights : np.ndarray = None):
     pos = convert_polar_to_xyz(dir_lat, dir_lon)
-    x, y, z = normalize_xyz(np.mean(pos[:, 0]),
-                            np.mean(pos[:, 1]),
-                            np.mean(pos[:, 2]))
-    lat_arr, lon_arr = convert_xyz_to_polar(np.array([x]),
-                                            np.array([y]),
-                                            np.array([z]))
+    _weights = np.ones(len(x)) if dir_weights is None else dir_weights
+    x, y, z = normalize_xyz(np.average(pos[:, 0], weights=_weights),
+                            np.average(pos[:, 1], weights=_weights),
+                            np.average(pos[:, 2], weights=_weights))
+    lat_arr, lon_arr = convert_xyz_to_polar(combine_xyz(x, y, z))
     return lat_arr[0], lon_arr[0]
 
 # ------- 3D methods -------
@@ -128,13 +131,34 @@ def get_healpix_xyz(nside = 64):
     pos      = convert_polar_to_xyz(lat, lon)
     return pos
 
-def get_healpix_latlon(ndir):
-    dir_nside = get_nside(ndir)
-    dir_lon, dir_lat = hp.pix2ang(dir_nside, np.arange(ndir), lonlat = True)
+def get_healpix_latlon(nside):
+    ndir = get_npix(nside)
+    dir_lon, dir_lat = hp.pix2ang(nside, np.arange(ndir), lonlat = True)
     return dir_lat, dir_lon
 
 def get_pix_by_ang(nside, lat, lon):
-    pix_index = hp.pixelfunc.ang2pix(nside = nside,
-                                     theta = np.radians(90 - lat),
-                                     phi   = np.radians(lon))
+    theta, phi = convert_polar_to_spherical(lat, lon)
+    pix_index = hp.pixelfunc.ang2pix(nside, theta, phi)
     return pix_index
+
+def get_disc_indices(nside, disc_size, disc_lat, disc_lon):
+    theta, phi = np.deg2rad(90 - disc_lat), np.deg2rad(disc_lon)
+    _vec = hp.ang2vec(theta, phi)
+    ipix_disc = hp.query_disc(nside= nside, vec=_vec, radius=np.radians(disc_size))
+    return ipix_disc
+
+# ------- Pixel Rotation -------
+def rotate_pixels_pole_to_north(data_arr, pole_lat, pole_lon):
+    theta, phi = convert_polar_to_spherical(pole_lat, pole_lon)
+    euler_rot_angles = np.array([phi, -theta, 0])
+    r = hp.rotator.Rotator(rot = euler_rot_angles, deg=False, eulertype='ZYX')
+    data_rotated = r.rotate_map_pixel(data_arr)
+    return data_rotated
+
+def rotate_pixels_north_to_pole(data_arr, pole_lat, pole_lon):
+    theta, phi = convert_polar_to_spherical(pole_lat, pole_lon)
+    euler_rot_angles = np.array([phi, -theta, 0])
+    r = hp.rotator.Rotator(rot = euler_rot_angles, inv=True, deg=False, eulertype='ZYX')
+    data_rotated = r.rotate_map_pixel(data_arr)
+    return data_rotated
+

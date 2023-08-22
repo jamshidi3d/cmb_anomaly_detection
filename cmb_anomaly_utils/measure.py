@@ -53,7 +53,7 @@ def calc_dcorr2(patch1:PixMap, patch2:PixMap, **kwargs):
     return mu.integrate_curve(measure_range[:max_index],
                               (t_tpcf[:max_index] - b_tpcf[:max_index])**2)
 
-def calc_norm_corr(patch1:PixMap, patch2:PixMap, **kwargs):
+def calc_norm_corr(patch1:PixMap, patch2:PixMap = None, **kwargs):
     '''- kwargs: \n
     measure_range - corr_full_integral\n
     max_valid_ang - cutoff_ratio - ndata_chunks\n
@@ -70,20 +70,20 @@ def calc_norm_corr(patch1:PixMap, patch2:PixMap, **kwargs):
     geom_int    = mu.integrate_curve(measure_range[:max_index], tctt[:max_index] ** 2)
     return geom_int / f_int - 1
 
-def calc_std(patch1:PixMap, patch2:PixMap, **kwargs):
+def calc_std(patch1:PixMap, patch2:PixMap = None, **kwargs):
     return su.std_pix_map(patch1)
 
-def calc_norm_std(patch1:PixMap, patch2:PixMap, **kwargs):
+def calc_norm_std(patch1:PixMap, patch2:PixMap = None, **kwargs):
     std_full = kwargs.get(const.KEY_STD_FULL, 1)
-    return su.std_pix_map(patch1) / std_full
+    return calc_std(patch1) / std_full
 
 def calc_dstd2(patch1:PixMap, patch2:PixMap, **kwargs):
-    return (su.std_pix_map(patch1) - su.std_pix_map(patch2))**2
+    return (calc_std(patch1) - calc_std(patch2))**2
 
 def calc_norm_dstd2(patch1:PixMap, patch2:PixMap, **kwargs):
     return (calc_norm_std(patch1, **kwargs) - calc_norm_std(patch2, **kwargs))**2
 
-def calc_mean(patch1:PixMap, patch2:PixMap, **kwargs):
+def calc_mean(patch1:PixMap, patch2:PixMap = None, **kwargs):
     return su.mean_pix_map(patch1)
 
 func_dict = {
@@ -96,6 +96,16 @@ func_dict = {
     const.NORM_D_STD2_FLAG: calc_norm_dstd2
 }
 
+#------------ General Geometry ------------
+def get_measure(sky_pix, **kwargs):
+    geom_flag   = kwargs.get(const.KEY_GEOM_FLAG)
+    if geom_flag == const.CAP_FLAG:
+        return get_cap_measure(sky_pix, **kwargs)
+    elif geom_flag == const.STRIP_FLAG:
+        return get_strip_measure(sky_pix, **kwargs)
+    else:
+        print("Selected geometry is not supported yet!")
+
 #------------ Cap ------------
 def get_cap_measure(sky_pix:PixMap, **kwargs):
     '''- kwargs: \n
@@ -106,10 +116,8 @@ def get_cap_measure(sky_pix:PixMap, **kwargs):
     measure_flag    = kwargs.get(const.KEY_MEASURE_FLAG, const.STD_FLAG)
     geom_range      = kwargs.get(const.KEY_GEOM_RANGE, su.get_range())
     _kwargs         = kwargs.copy()
-    _kwargs.setdefault(const.KEY_CORR_FULL_INT,
-                       calc_corr_full_integral(sky_pix, **_kwargs))
-    _kwargs.setdefault(const.KEY_STD_FULL,
-                       calc_std(sky_pix, None, **_kwargs))
+    _kwargs[const.KEY_CORR_FULL_INT] = calc_corr_full_integral(sky_pix, **_kwargs)
+    _kwargs[const.KEY_STD_FULL]      = calc_std(sky_pix, None, **_kwargs)
     # Measure
     measure_func    = func_dict[measure_flag]
     measure_results = np.zeros(len(geom_range))
@@ -139,10 +147,8 @@ def get_strip_measure(sky_pix:PixMap, **kwargs):
     geom_range      = kwargs.get(const.KEY_GEOM_RANGE, su.get_range())
     _kwargs         = kwargs.copy()
     strip_starts, strip_centers, strip_ends = geom.get_strip_limits(strip_thickness, geom_range)
-    _kwargs.setdefault(const.KEY_CORR_FULL_INT,
-                       calc_corr_full_integral(sky_pix, **_kwargs))
-    _kwargs.setdefault(const.KEY_STD_FULL,
-                       calc_std(sky_pix, None, **_kwargs))
+    _kwargs[const.KEY_CORR_FULL_INT] = calc_corr_full_integral(sky_pix, **_kwargs)
+    _kwargs[const.KEY_STD_FULL]      = calc_std(sky_pix, None, **_kwargs)
     # Measure
     measure_func = func_dict[measure_flag]
     measure_results = np.zeros(len(geom_range))

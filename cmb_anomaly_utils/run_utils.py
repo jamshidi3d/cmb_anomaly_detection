@@ -43,14 +43,17 @@ class RunInputs:
         self.cmb_fpath          = kwargs.get(const.KEY_CMB_FPATH,        None)
         self.mask_fpath         = kwargs.get(const.KEY_MASK_FPATH,       None)
         self.nside              = kwargs.get(const.KEY_NSIDE,            64)
+        self.dir_nside          = kwargs.get(const.KEY_DIRNSIDE,         16)
+        self.sims_dir_anom_path = kwargs.get(const.KEY_SIMS_ANOM_PATH,   None)
+        self.cmb_dir_anom_fpath = kwargs.get(const.KEY_CMB_ANOM_FPATH,   None)
         self.is_masked          = kwargs.get(const.KEY_IS_MASKED,        False)
         self.tpcf_mode          = kwargs.get(const.KEY_TPCF_MODE,        const.TT_2PCF)
         self.pole_lon           = kwargs.get(const.KEY_POLE_LAT,         90)
         self.pole_lat           = kwargs.get(const.KEY_POLE_LON,         0)
         self.min_pix_ratio      = kwargs.get(const.KEY_MIN_PIX_RATIO,    1)
         self.max_valid_ang      = kwargs.get(const.KEY_MAX_VALID_ANG,    0)
-        self.corr_full_int      = kwargs.get(const.KEY_CORR_FULL_INT,    0)
-        self.std_full           = kwargs.get(const.KEY_STD_FULL,         0)
+        self.corr_full_int      = kwargs.get(const.KEY_CORR_FULL_INT,    1)
+        self.std_full           = kwargs.get(const.KEY_STD_FULL,         1)
         self.measure_flag       = kwargs.get(const.KEY_MEASURE_FLAG,     const.STD_FLAG)
         self.geom_flag          = kwargs.get(const.KEY_GEOM_FLAG,        const.CAP_FLAG)
         self._measure_start     = kwargs.get(const.KEY_MEASURE_START,    0)
@@ -78,7 +81,7 @@ class RunInputs:
                                                     self._measure_stop, 
                                                     self._dmeasure_samples)
     
-    # ------ geom range ------
+    # ------ Geom range ------
     @property
     def geom_start(self):
         return self._geom_start
@@ -98,15 +101,15 @@ class RunInputs:
         self.set_geom_range()
 
     @property
-    def dgeom_samples(self):
+    def delta_geom_samples(self):
         return self._dgeom_samples
     
-    @dgeom_samples.setter
-    def dgeom_samples(self, value):
+    @delta_geom_samples.setter
+    def delta_geom_samples(self, value):
         self._dgeom_samples = value
         self.set_geom_range()
 
-    # ------ measure range ------
+    # ------ Measure range ------
     @property
     def measure_start(self):
         return self._measure_start
@@ -126,22 +129,30 @@ class RunInputs:
         self.set_measure_range()
 
     @property
-    def dmeasure_samples(self):
+    def delta_measure_samples(self):
         return self._dmeasure_samples
     
-    @dmeasure_samples.setter
-    def dmeasure_samples(self, value):
+    @delta_measure_samples.setter
+    def delta_measure_samples(self, value):
         self._dmeasure_samples = value
         self.set_measure_range()
 
-    # ------ conversion ------
+    # ------ Utility ------
+    @property
+    def masked_txt(self):
+        return 'masked' if self.is_masked else 'inpainted'
+
+    # ------ Conversion ------
     def to_kwargs(self):
         kwargs = {}
         kwargs.setdefault(const.KEY_OBSERVABLE,       self.observable)
         kwargs.setdefault(const.KEY_SIMS_PATH,        self.sims_path)
         kwargs.setdefault(const.KEY_CMB_FPATH,        self.cmb_fpath)
         kwargs.setdefault(const.KEY_MASK_FPATH,       self.mask_fpath)
+        kwargs.setdefault(const.KEY_SIMS_ANOM_PATH,   self.sims_dir_anom_path)
+        kwargs.setdefault(const.KEY_CMB_ANOM_FPATH,   self.cmb_dir_anom_fpath)
         kwargs.setdefault(const.KEY_NSIDE,            self.nside)
+        kwargs.setdefault(const.KEY_DIRNSIDE,         self.dir_nside)
         kwargs.setdefault(const.KEY_IS_MASKED,        self.is_masked)
         kwargs.setdefault(const.KEY_TPCF_MODE,        self.tpcf_mode)
         kwargs.setdefault(const.KEY_POLE_LON,         self.pole_lon)
@@ -154,12 +165,12 @@ class RunInputs:
         kwargs.setdefault(const.KEY_GEOM_FLAG,        self.geom_flag)
         kwargs.setdefault(const.KEY_GEOM_START,       self.geom_start)
         kwargs.setdefault(const.KEY_GEOM_STOP,        self.geom_stop)
-        kwargs.setdefault(const.KEY_DGEOM_SAMPLES,    self.dgeom_samples)
+        kwargs.setdefault(const.KEY_DGEOM_SAMPLES,    self.delta_geom_samples)
         kwargs.setdefault(const.KEY_GEOM_RANGE,       self.geom_range)
         kwargs.setdefault(const.KEY_MEASURE_RANGE,    self.measure_range)
         kwargs.setdefault(const.KEY_MEASURE_START,    self.measure_start)
         kwargs.setdefault(const.KEY_MEASURE_STOP,     self.measure_stop)
-        kwargs.setdefault(const.KEY_DMEASURE_SAMPLES, self.dmeasure_samples)
+        kwargs.setdefault(const.KEY_DMEASURE_SAMPLES, self.delta_measure_samples)
         kwargs.setdefault(const.KEY_CUTOFF_RATIO,     self.cutoff_ratio)
         kwargs.setdefault(const.KEY_NDATA_CHUNKS,     self.ndata_chunks)
         kwargs.setdefault(const.KEY_STRIP_THICKNESS,  self.strip_thickness)

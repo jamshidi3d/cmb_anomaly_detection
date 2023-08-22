@@ -24,9 +24,7 @@ def get_strip(pix_map:PixMap, start_angle, stop_angle):
     rest_of_sky     = pix_map.extract_selection(r_o_s_selection)
     return strip, rest_of_sky
 
-def get_strip_limits(**kwargs):
-    strip_thickness = kwargs.get(const.KEY_STRIP_THICKNESS, 20)
-    geom_range      = kwargs.get(const.KEY_GEOM_RANGE, su.get_range())
+def get_strip_limits(strip_thickness, geom_range):
     def clamp_to_sphere_degree(value):
         return 180 / np.pi * np.arccos(np.clip(value, -1, 1))
     height          = 1 - np.cos(strip_thickness * np.pi / 180)

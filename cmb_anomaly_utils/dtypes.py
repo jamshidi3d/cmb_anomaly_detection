@@ -18,7 +18,7 @@ class PixMap:
     @property
     def data(self):
         if not self.mask is None:
-            vis_filter = self.get_pixels_visibility()
+            vis_filter = self.get_pixels_visibility_filter()
             return self.raw_data[vis_filter]
         return self.raw_data
     
@@ -29,7 +29,7 @@ class PixMap:
     @property
     def pos(self):
         if not self.mask is None:
-            vis_filter = self.get_pixels_visibility()
+            vis_filter = self.get_pixels_visibility_filter()
             return self.raw_pos[vis_filter]
         return self.raw_pos
 
@@ -54,14 +54,14 @@ class PixMap:
                       self.pole_lon)
 
     # ------ pixel visibility methods ------
-    def get_pixels_visibility(self):
+    def get_pixels_visibility_filter(self):
         vis_filter = (self.mask == False)
         return vis_filter
 
     def get_visible_pixels_ratio(self):
         if self.mask is None:
             return 1.0
-        vis_filter = self.get_pixels_visibility()
+        vis_filter = self.get_pixels_visibility_filter()
         return np.sum(vis_filter) / len(vis_filter)
 
     # ------ pole methods ------
@@ -72,6 +72,7 @@ class PixMap:
         self.pole_lat, self.pole_lon = pole_lat, pole_lon
 
     def reset_pole(self):
+        # Check if it is rotated or not
         if 90 - self.pole_lat >= const.ANG_THRESHOLD:
             # Original north is gone to the same (Theta) and to (180 + Phi) of previous pole
             self.set_pole(self.pole_lat, 180 + self.pole_lon)

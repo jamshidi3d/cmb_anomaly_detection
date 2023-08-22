@@ -112,3 +112,42 @@ def get_plot_title(**kwargs):
     title += r', '
     title += r'{} Map'.format("Masked" if kwargs['is_masked'] else "Inpainted")
     return title
+
+
+class BColors:
+    HEADER    = '\033[95m'
+    OKBLUE    = '\033[94m'
+    OKCYAN    = '\033[96m'
+    OKGREEN   = '\033[92m'
+    WARNING   = '\033[93m'
+    FAIL      = '\033[91m'
+    ENDC      = '\033[0m'
+    BOLD      = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+def print_inputs(input_dict):
+    line_col  = BColors.OKCYAN
+    txt_col   = BColors.WARNING
+    # max key length
+    mkl = 20
+    # handy functions
+    def colorize(txt, col):
+        return col + txt + BColors.ENDC
+    def print_line(length, color = BColors.OKGREEN):
+        print(colorize("*" * length, color))
+    # fancy header
+    print_line(2 * mkl, line_col)
+    txt_header = "Parameters"
+    half1   = txt_header[:int(len(txt_header)/2)]
+    half2   = txt_header[int(len(txt_header)/2):]
+    _half1  = colorize("*" * (mkl - len(half1)), line_col)
+    _half2  = colorize("*" * (mkl - len(half2)), line_col)
+    print(_half1 + colorize(txt_header, txt_col) + _half2)
+    # parameters
+    for key, val in zip(input_dict.keys(), input_dict.values()):
+        if "comment" in key.lower():
+            continue
+        txt_before_delim = "-" + " " * (mkl - len(key)) + colorize(str(key), txt_col)
+        print(txt_before_delim + " : " + colorize(str(val), txt_col))
+    # fancy line
+    for i in range(2) : print_line(2 * mkl, line_col)
