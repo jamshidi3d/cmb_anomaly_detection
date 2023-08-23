@@ -27,19 +27,22 @@ def average_lon(lon_arr):
     return np.degrees(np.arctan2(y_mean, x_mean))
 
 def average_dir_by_zphi(dir_lat : np.ndarray, dir_lon : np.ndarray):
-    z_arr    = np.cos(dir_lat)
+    z_arr    = np.cos(90 - dir_lat)
     z_mean   = np.mean(z_arr)
     lon_mean = average_lon(dir_lon)
     lat_mean = np.arccos(z_mean)
     return lat_mean, lon_mean
 
 def average_dir_by_xyz(dir_lat : np.ndarray, dir_lon : np.ndarray, dir_weights : np.ndarray = None):
-    pos = convert_polar_to_xyz(dir_lat, dir_lon)
     _weights = np.ones(len(dir_lat)) if dir_weights is None else dir_weights
+    pos     = convert_polar_to_xyz(dir_lat, dir_lon)
+    print(pos)
     x, y, z = normalize_xyz(np.average(pos[:, 0], weights=_weights),
                             np.average(pos[:, 1], weights=_weights),
                             np.average(pos[:, 2], weights=_weights))
+    print(x,y,z)
     lat_arr, lon_arr = convert_xyz_to_polar(combine_xyz(x, y, z))
+    print(lat_arr, lon_arr)
     return lat_arr[0], lon_arr[0]
 
 # ------- 3D methods -------
