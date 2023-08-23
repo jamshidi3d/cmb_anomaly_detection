@@ -12,6 +12,7 @@ def align_pole_to_mac(pix_map:PixMap,
                       geom_range = None,
                       all_dir_lat = None,
                       all_dir_lon = None):
+    '''Aligns pix_map and returns pole's lat & lon'''
     if all_dir_cap_anom is None:
         return
     plat, plon = find_dir_by_mac(all_dir_cap_anom,
@@ -20,6 +21,7 @@ def align_pole_to_mac(pix_map:PixMap,
                                  all_dir_lat,
                                  all_dir_lon)
     pix_map.change_pole(plat, plon )
+    return plat, plon
 
 def find_dir_by_mac(all_dir_cap_anom,
                     dir_cap_size:float = None,

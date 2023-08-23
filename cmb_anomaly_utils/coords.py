@@ -35,7 +35,7 @@ def average_dir_by_zphi(dir_lat : np.ndarray, dir_lon : np.ndarray):
 
 def average_dir_by_xyz(dir_lat : np.ndarray, dir_lon : np.ndarray, dir_weights : np.ndarray = None):
     pos = convert_polar_to_xyz(dir_lat, dir_lon)
-    _weights = np.ones(len(x)) if dir_weights is None else dir_weights
+    _weights = np.ones(len(dir_lat)) if dir_weights is None else dir_weights
     x, y, z = normalize_xyz(np.average(pos[:, 0], weights=_weights),
                             np.average(pos[:, 1], weights=_weights),
                             np.average(pos[:, 2], weights=_weights))
