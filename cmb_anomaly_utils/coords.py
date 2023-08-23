@@ -36,13 +36,10 @@ def average_dir_by_zphi(dir_lat : np.ndarray, dir_lon : np.ndarray):
 def average_dir_by_xyz(dir_lat : np.ndarray, dir_lon : np.ndarray, dir_weights : np.ndarray = None):
     _weights = np.ones(len(dir_lat)) if dir_weights is None else dir_weights
     pos     = convert_polar_to_xyz(dir_lat, dir_lon)
-    print(pos)
     x, y, z = normalize_xyz(np.average(pos[:, 0], weights=_weights),
                             np.average(pos[:, 1], weights=_weights),
                             np.average(pos[:, 2], weights=_weights))
-    print(x,y,z)
     lat_arr, lon_arr = convert_xyz_to_polar(combine_xyz(x, y, z))
-    print(lat_arr, lon_arr)
     return lat_arr[0], lon_arr[0]
 
 # ------- 3D methods -------
@@ -81,7 +78,7 @@ def convert_xyz_to_polar(vec_ndarray):
     '''returns lat, lon '''
     x, y, z = separate_xyz(vec_ndarray)
     theta   = np.arccos(z)
-    phi     = np.arctan(y / x)
+    phi     = np.arctan2(y, x)
     lat, lon = 90 - np.degrees(theta), np.degrees(phi)
     return lat, lon
 
