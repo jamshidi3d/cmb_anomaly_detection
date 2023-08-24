@@ -8,9 +8,9 @@ from . import const
 @njit(fastmath = True)
 def clamp(x, x_min = -1, x_max = 1):
     if x <= x_min:
-        return x_min + const.THRESHOLD
+        return x_min + const.DIST_THRESHOLD
     elif x >= x_max:
-        return x_max - const.THRESHOLD
+        return x_max - const.DIST_THRESHOLD
     return x
 
 def get_range(start = 0, stop = 180, dsamples = 1):
@@ -61,11 +61,11 @@ def two_blocks_correlation(data1:np.ndarray, pos1:np.ndarray,
 def parallel_correlation_pix_map(pix_map:PixMap, **kwargs):
     ndata_chunks        = kwargs.get('ndata_chunks', 4)
     nmeasure_samples    = kwargs.get('nmeasure_samples', 181)
-    mode                = kwargs.get('tpcf_mode', const.TT_2PCF)
+    mode                = kwargs.get('tpcf_mode', const.TPCF_TT)
     if len(pix_map.data) == 0:
         return 0
     _pix_map = pix_map.copy()
-    if mode == const.TT_2PCF:
+    if mode == const.TPCF_TT:
         _pix_map.data = _pix_map.data - np.mean(_pix_map.data)
     chunk_size = round(len(_pix_map.data) / ndata_chunks)
     processes = []
@@ -89,11 +89,11 @@ def parallel_correlation_pix_map(pix_map:PixMap, **kwargs):
 
 
 #------------- Linear -------------
-def correlation_pix_map(pix_map:PixMap, n_samples = 180, mode = const.TT_2PCF):
+def correlation_pix_map(pix_map:PixMap, n_samples = 180, mode = const.TPCF_TT):
     _pix_map = pix_map.copy()
     corr = np.zeros(n_samples)
     count = np.zeros(n_samples, dtype = np.int_)
-    if mode == const.TT_2PCF:
+    if mode == const.TPCF_TT:
         _pix_map.data = _pix_map.data - np.mean(_pix_map.data)
     for i in range(len(_pix_map.data)):
         for j in range(i, len(_pix_map.data)):

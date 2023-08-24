@@ -14,7 +14,7 @@ def calc_corr_full_integral(sky_pix:PixMap, **kwargs):
     '''- kwargs:\n
     ndata_chunks - measure_range'''
     full_int = 1
-    measure_flag        = kwargs.get(const.KEY_MEASURE_FLAG, const.T)
+    measure_flag        = kwargs.get(const.KEY_MEASURE_FLAG, const.OBS_T)
     if measure_flag in (const.NORM_CORR_FLAG, ):
         fullsky_corr    = su.parallel_correlation_pix_map(sky_pix, **kwargs)
         measure_range   = kwargs.get(const.KEY_MEASURE_RANGE, su.get_range())

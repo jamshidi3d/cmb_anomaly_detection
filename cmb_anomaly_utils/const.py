@@ -5,7 +5,7 @@ RING                = 'RING'
 # ------- Grometry flags -------
 CAP_FLAG            = 'CAP'
 STRIP_FLAG          = 'STRIP'
-
+FULL_SKY_FLAG       = 'FULL_SKY'
 # ------- Measure flags -------
 NORM_CORR_FLAG      = 'NORM_CORR'
 D_CORR2_FLAG        = 'DCORR2'
@@ -16,22 +16,22 @@ NORM_D_STD2_FLAG    = 'NORM_D_STD2'
 MEAN_FLAG           = 'MEAN'
 
 # ------- Observables -------
-T                   = 'T'
-U                   = 'U'
-Q                   = 'Q'
-P                   = 'P'
-E_MODE              = 'EMODE'
-B_MODE              = 'BMODE'
+OBS_T               = 'T'
+OBS_U               = 'U'
+OBS_Q               = 'Q'
+OBS_P               = 'P'
+OBS_E_MODE          = 'EMODE'
+OBS_B_MODE          = 'BMODE'
 '''polarization strength which is equal to sqrt(U^2+Q^2)'''
 
 # ------- 2 Point Correlation Funciton -------
-TT_2PCF             = 'TT'
+TPCF_TT             = 'TT'
 
 # ------- Threshold parameters -------
 ANG_THRESHOLD       = 0.0001
-THRESHOLD           = 0.0000001
+DIST_THRESHOLD      = 0.0000001
 
-# ------- Input parameters -------
+# ------- Input parameters (keys) -------
 KEY_OBSERVABLE          = 'observable' 
 KEY_SIMS_PATH           = 'sims_path'
 KEY_CMB_FPATH           = 'cmb_fpath'

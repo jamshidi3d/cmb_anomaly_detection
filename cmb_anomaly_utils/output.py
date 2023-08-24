@@ -1,119 +1,92 @@
-import matplotlib.pyplot as plt
+import os
 import numpy as np
 import matplotlib
+import matplotlib.pyplot as plt
 
 from . import const
 
-def get_output_path(**kwargs):
-    '''inputs:\n
-    measure_flag - observable - nside - is_masked - geom_flag - dtheta'''
-    measure_flag = kwargs['measure_flag']
-    output_fpath = "./output/"
-    output_fpath += "{}".format(kwargs['observable'])
-    output_fpath += "_{}".format(kwargs['nside'])
-    output_fpath += "_{}".format("masked" if kwargs['is_masked'] else "inpainted")
-    output_fpath += "_{}".format("cap" if kwargs['geom_flag'] == const.CAP_FLAG else "{}strip".format(kwargs['strip_thickness']))
-    output_fpath += "_{}".format("dcorr2" if measure_flag == const.D_CORR2_FLAG else \
-                                "dstd2" if measure_flag == const.D_STD2_FLAG else \
-                                "std" if measure_flag == const.STD_FLAG else \
-                                "corr" if measure_flag == const.NORM_CORR_FLAG else "mean")
-    # output_fpath += "_{}dtheta".format(kwargs['dtheta'])
-    return output_fpath
+# ------- Path generators -------
+def ensure_path(path):
+    '''Create path if doesn't exist'''
+    does_exist = os.path.exists(path)
+    if not does_exist:
+        os.makedirs(path)
 
+def ensure_output_path(base_path = './', **kwargs):
+    mask_txt:str     = 'masked' if kwargs.get(const.KEY_IS_MASKED) else 'inpainted'
+    geom_flag:str    = kwargs.get(const.KEY_GEOM_FLAG)
+    measure_flag:str = kwargs.get(const.KEY_MEASURE_FLAG)
+    bpath = base_path + "" if base_path[-1] == "/" else "/"
+    path = bpath + "{}/{}/{}/".format(mask_txt.lower(),
+                                      geom_flag.lower(),
+                                      measure_flag.lower())
+    ensure_path(path)
+    return path
 
-def save_data_to_txt(measure_result, **kwargs):
-    output_fpath = get_output_path(**kwargs)
-    fname = output_fpath + "_measure_range" + ".txt"
-    with open(fname, "w") as file:
-        np.savetxt(file, kwargs['measure_range'])
-    fname = output_fpath + "_result" + ".txt"
-    with open(fname, "w") as file:
-        np.savetxt(file, measure_result)
-
-
-def save_fig_to_pdf(fig:plt.Figure, **kwargs):
-    matplotlib.use('Agg') # for writing to files only
-    output_fpath = get_output_path(**kwargs)
-    fig.savefig(output_fpath + ".pdf", transparent=True)
-
-
-def get_plot_fig(measure_result, **kwargs):
-    print("- Plotting")
-    matplotlib.use('Agg') # for writing to files only
-    fig, ax = plt.subplots(1,1)
-    fig.set_size_inches(8,5)
-    # axis numbers font size
-    ax.tick_params(axis='both', which='major', labelsize=14)
-    # xlabel
-    xlabel = get_xlabel_tex(**kwargs)
-    ax.set_xlabel(xlabel, fontsize=16)
-    # ylabel
-    ylabel = get_ylabel_tex(**kwargs)
-    ax.set_ylabel(ylabel, fontsize=18)
-    # title
-    title = get_plot_title(**kwargs)
-    ax.set_title(title, fontsize = 20)
-    # plot
-    ax.plot(kwargs['measure_range'], measure_result, '-k')
-    return fig
-
-#---------- TeX style string generators ----------
+# ------- TeX generators -------
+tex_geom_dict = {
+    const.CAP_FLAG:     (r"\mathrm{top}", r"\mathrm{bottom}"),
+    const.STRIP_FLAG:   (r"\mathrm{strip}", r"\mathrm{rest\;of\;sky}"),
+    const.FULL_SKY_FLAG: r"\mathrm{full\;sky}"
+}
+tex_measure_dict = {
+    const.STD_FLAG:     r'$\sigma_{geom1}(observable)$',
+    const.D_STD2_FLAG:  r'$[\sigma_{geom1}({observable}) - \sigma_{geom2}({observable})]^2$',
+    const.NORM_CORR_FLAG: \
+        r'$\frac {{\int [C_{tpcf_mode}^{{geom1}}(\gamma)]^2 d\gamma }}{{\int [C_{tpcf_mode}^{{full_sky}}(\gamma)]^2 d\gamma }} - 1$',
+    const.D_CORR2_FLAG: \
+        r'$\int [C_{tpcf_mode}^{{geom1}}(\gamma) - C_{tpcf_mode}^{{geom2}}(\gamma)]^2 d\gamma$'
+    # const.NORM_STD_FLAG:
+    # const.NORM_D_STD2_FLAG:
+    # const.MEAN_FLAG:
+}
 def get_measure_tex(**kwargs):
-    obs, measure_flag, geom_flag = kwargs['observable'], kwargs['measure_flag'], kwargs['geom_flag']
-    double_obs = '{'+ obs + obs +'}'
-    # TeX style titles
-    if kwargs['measure_flag'] == const.D_CORR2_FLAG:
-        captitle = r'$\int [C_{double_obs}^{{top}}(\gamma) - C_{double_obs}^{{bottom}}(\gamma)]^2 d\gamma$'.format(double_obs = double_obs)
-        strtitle = r'$\int [C_{double_obs}^{{strip}}(\gamma) - C_{double_obs}^{{rest\,of\,sky}}(\gamma)]^2 d\gamma$'.format(double_obs = double_obs)
-    elif measure_flag == const.NORM_CORR_FLAG:
-        captitle = r'$\frac {{ \int [C_{double_obs}^{{top}}(\gamma)]^2 d\gamma }} {{ \int [C_{double_obs}^{{total}}(\gamma)]^2 d\gamma }}  - 1$'.format(double_obs = double_obs)
-        strtitle = r'$\frac {{ \int [C_{double_obs}^{{strip}}(\gamma)]^2 d\gamma }} {{ \int [C_{double_obs}^{{total}}(\gamma)]^2 d\gamma }} - 1$'.format(double_obs = double_obs)
-    elif measure_flag == const.D_STD2_FLAG:
-        captitle = r'$[\sigma_{{top}}({obs}) - \sigma_{{bottom}}({obs})]^2$'.format(obs = obs)
-        strtitle = r'$[\sigma_{{strip}}({obs}) - \sigma_{{rest\,of\,sky}}({obs})]^2$'.format(obs = obs)
-    elif measure_flag == const.STD_FLAG:
-        captitle = r'$\sigma_{{top}}({obs})$'.format(obs = obs)
-        strtitle = r'$\sigma_{{strip}}({obs})$'.format(obs = obs)
-    elif measure_flag == const.MEAN_FLAG:
-        captitle = r'$<{obs}>_{{top}}$'.format(obs = obs)
-        strtitle = r'$<{obs}>_{{strip}}$'.format(obs = obs)
-    # returns
-    if geom_flag == const.CAP_FLAG:
-        return captitle
-    elif geom_flag == const.STRIP_FLAG:
-        return strtitle
+    measure_flag = kwargs.get(const.KEY_MEASURE_FLAG)
+    geom_flag    = kwargs.get(const.KEY_GEOM_FLAG)
+    measure_txt  = tex_measure_dict[measure_flag].format(
+        observable  = kwargs.get(const.KEY_OBSERVABLE),
+        tpcf_mode   = kwargs.get(const.KEY_TPCF_MODE),
+        geom1       = tex_geom_dict[geom_flag][0],
+        geom2       = tex_geom_dict[geom_flag][1],
+        full_sky    = tex_geom_dict[const.FULL_SKY_FLAG]
+    )
+    return measure_txt
 
-def get_xlabel_tex(**kwargs):
-    capxlabel = r'Cap angle [$\degree$]'
-    strxlabel = r'Stripe Center [$\degree$]'
-    xlabel = capxlabel if kwargs['geom_flag'] == const.CAP_FLAG else strxlabel
-    return xlabel
+title_text_dict = {
+    const.CAP_FLAG:     r'Cap Size',
+    const.STRIP_FLAG:   r'Strip Center'
+}
+def get_title_tex(**kwargs):
+    measure_text = get_measure_tex(**kwargs)
+    geom_flag    = kwargs.get(const.KEY_GEOM_FLAG)
+    return  r'\boldmath{measure_txt}'.format(measure_txt = measure_text) + \
+            r'\textbf{ vs. }' + \
+            r'\textbf{{{title_txt}}}'.format(title_txt = title_text_dict[geom_flag]) + \
+            r' (Inpainted Map)'
 
-unit_dict = {
-    const.U:'\mu K',
-    const.Q:'\mu K',
-    const.P:'\mu K',
-    const.T:'\mu K'
+tex_unit_dict = {
+    const.STD_FLAG:         r'$[\mu K]$',
+    const.D_STD2_FLAG:      r'$[\mu K]^2$',
+    const.NORM_CORR_FLAG:   r'',
+    const.D_CORR2_FLAG:     r'$[\mu K]^4$',
+    const.NORM_STD_FLAG:    r'',
+    const.NORM_D_STD2_FLAG: r'',
+    const.MEAN_FLAG:        r'[\mu K]'
 }
 def get_ylabel_tex(**kwargs):
-    ylabel = get_measure_tex(**kwargs)
-    ylabel += r'$\>\>\>\>$'
-    if kwargs['measure_flag'] == const.STD_FLAG:
-        ylabel += r'$[{unit}]$'.format(unit = unit_dict[kwargs['observable']])
-    elif kwargs['measure_flag'] == const.D_CORR2_FLAG:
-        ylabel += r'$[{unit}]^4$'.format(unit = unit_dict[kwargs['observable']])
-    elif kwargs['measure_flag'] == const.NORM_CORR_FLAG:
-        pass
-    return ylabel
+    return  get_measure_tex(**kwargs) +\
+            r'\;' +\
+            tex_unit_dict[kwargs.get(const.KEY_MEASURE_FLAG)]
 
-def get_plot_title(**kwargs):
-    title = get_measure_tex(**kwargs)
-    title += r'$\,\,\,\, Vs \,\,\,\,$ {}'.format("Top Cap Size" if kwargs['geom_flag'] == const.CAP_FLAG else "Stripe Center")
-    title += r', '
-    title += r'{} Map'.format("Masked" if kwargs['is_masked'] else "Inpainted")
-    return title
+tex_xlabel = {
+    const.CAP_FLAG:   r'Cap Radius[$^\circ$]',
+    const.STRIP_FLAG: r'Strip Center[$^\circ$]'
+}
+def get_xlabel_tex(**kwargs):
+    geom_flag    = kwargs.get(const.KEY_GEOM_FLAG)
+    return tex_xlabel[geom_flag]
 
-
+# ------- Console printing ------- 
 class BColors:
     HEADER    = '\033[95m'
     OKBLUE    = '\033[94m'
@@ -126,16 +99,17 @@ class BColors:
     UNDERLINE = '\033[4m'
 
 def print_inputs(input_dict):
-    line_col  = BColors.OKCYAN
-    txt_col   = BColors.WARNING
-    # max key length
-    mkl = 20
-    # handy functions
+    # Handy functions
     def colorize(txt, col):
         return col + txt + BColors.ENDC
     def print_line(length, color = BColors.OKGREEN):
         print(colorize("*" * length, color))
-    # fancy header
+    # Colors used
+    line_col  = BColors.OKCYAN
+    txt_col   = BColors.WARNING
+    # Max key length
+    mkl = 20
+    # Fancy header
     print_line(2 * mkl, line_col)
     txt_header = "Parameters"
     half1   = txt_header[:int(len(txt_header)/2)]
@@ -143,11 +117,12 @@ def print_inputs(input_dict):
     _half1  = colorize("*" * (mkl - len(half1)), line_col)
     _half2  = colorize("*" * (mkl - len(half2)), line_col)
     print(_half1 + colorize(txt_header, txt_col) + _half2)
-    # parameters
+    # Parameters
     for key, val in zip(input_dict.keys(), input_dict.values()):
-        if "comment" in key.lower():
+        klower = key.lower()
+        if "comment" in klower or "range" in klower:
             continue
         txt_before_delim = "-" + " " * (mkl - len(key)) + colorize(str(key), txt_col)
         print(txt_before_delim + " : " + colorize(str(val), txt_col))
-    # fancy line
+    # Fancy line
     for i in range(2) : print_line(2 * mkl, line_col)

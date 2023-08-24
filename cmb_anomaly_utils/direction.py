@@ -10,6 +10,7 @@ def align_pole_to_mac(pix_map:PixMap,
                       all_dir_cap_anom = None,
                       dir_cap_size = None,
                       geom_range = None,
+                      top_ratio = 0.1,
                       all_dir_lat = None,
                       all_dir_lon = None):
     '''Aligns pix_map and returns pole's lat & lon'''
@@ -18,6 +19,7 @@ def align_pole_to_mac(pix_map:PixMap,
     plat, plon = find_dir_by_mac(all_dir_cap_anom,
                                  dir_cap_size,
                                  geom_range,
+                                 top_ratio,
                                  all_dir_lat,
                                  all_dir_lon)
     pix_map.change_pole(plat, plon )
@@ -26,6 +28,7 @@ def align_pole_to_mac(pix_map:PixMap,
 def find_dir_by_mac(all_dir_cap_anom,
                     dir_cap_size:float = None,
                     geom_range = None,
+                    top_ratio = 0.1,
                     all_dir_lat = None,
                     all_dir_lon = None):
     ''' lat, lon (in degrees)'''
@@ -36,7 +39,7 @@ def find_dir_by_mac(all_dir_cap_anom,
         dir_lat, dir_lon = coords.get_healpix_latlon(nside)
     cap_index   = su.find_nearest_index(geom_range, dir_cap_size)
     dir_weights = all_dir_cap_anom[:, cap_index]
-    _filter     = su.get_top_cut_filter(dir_weights, 0.1)
+    _filter     = su.get_top_cut_filter(dir_weights, top_ratio)
     avg_lat, avg_lon    = coords.average_dir_by_xyz(all_dir_lat[_filter],
                                                     all_dir_lon[_filter],
                                                     dir_weights[_filter])

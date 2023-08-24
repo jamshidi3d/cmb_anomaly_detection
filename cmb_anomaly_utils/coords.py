@@ -17,7 +17,8 @@ def get_angle_dist_polar(lat1, lon1, lat2, lon2):
     v1, v2 = convert_polar_to_xyz(  np.array([lat1, lat2]),
                                     np.array([lon1, lon2]))
     return get_angle_dist_xyz(np.array([v1]), np.array([v2]))
-    
+
+#TODO
 def average_lon(lon_arr):
     lon_arr_rad = np.radians(lon_arr)
     x = np.cos(lon_arr_rad)
@@ -26,6 +27,7 @@ def average_lon(lon_arr):
     y_mean = np.mean(y)
     return np.degrees(np.arctan2(y_mean, x_mean))
 
+#TODO
 def average_dir_by_zphi(dir_lat : np.ndarray, dir_lon : np.ndarray):
     z_arr    = np.cos(90 - dir_lat)
     z_mean   = np.mean(z_arr)

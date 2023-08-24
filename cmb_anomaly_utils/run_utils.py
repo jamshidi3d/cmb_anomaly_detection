@@ -10,7 +10,7 @@ class MapGenerator:
     observable - nside - is_masked \n
     sims_path - cmb_fpath - mask_fpath'''
     def __init__(self, **kwargs):
-        self.observable  = kwargs.get(const.KEY_OBSERVABLE, const.T)
+        self.observable  = kwargs.get(const.KEY_OBSERVABLE, const.OBS_T)
         self.nside       = kwargs.get(const.KEY_NSIDE, 64)
         self.is_masked   = kwargs.get(const.KEY_IS_MASKED, False)
         self.sims_path   = kwargs.get(const.KEY_SIMS_PATH, None)
@@ -28,7 +28,7 @@ class MapGenerator:
     def create_sim_map_from_txt(self, num):
         fpathname  = self.sims_path + self.sims_fnames[num]
         _data      = freader.read_txt_attr(fpathname)
-        if self.observable == const.T:
+        if self.observable == const.OBS_T:
             _data -= np.nanmean(_data)
         return PixMap(_data, self.pos, self.mask)
     
@@ -38,7 +38,7 @@ class MapGenerator:
 
 class RunInputs:
     def __init__(self, **kwargs) -> None:
-        self.observable         = kwargs.get(const.KEY_OBSERVABLE,       const.T)
+        self.observable         = kwargs.get(const.KEY_OBSERVABLE,       const.OBS_T)
         self.sims_path          = kwargs.get(const.KEY_SIMS_PATH,        None)
         self.cmb_fpath          = kwargs.get(const.KEY_CMB_FPATH,        None)
         self.mask_fpath         = kwargs.get(const.KEY_MASK_FPATH,       None)
@@ -47,7 +47,7 @@ class RunInputs:
         self.sims_dir_anom_path = kwargs.get(const.KEY_SIMS_ANOM_PATH,   None)
         self.cmb_dir_anom_fpath = kwargs.get(const.KEY_CMB_ANOM_FPATH,   None)
         self.is_masked          = kwargs.get(const.KEY_IS_MASKED,        False)
-        self.tpcf_mode          = kwargs.get(const.KEY_TPCF_MODE,        const.TT_2PCF)
+        self.tpcf_mode          = kwargs.get(const.KEY_TPCF_MODE,        const.TPCF_TT)
         self.pole_lon           = kwargs.get(const.KEY_POLE_LAT,         90)
         self.pole_lat           = kwargs.get(const.KEY_POLE_LON,         0)
         self.min_pix_ratio      = kwargs.get(const.KEY_MIN_PIX_RATIO,    1)

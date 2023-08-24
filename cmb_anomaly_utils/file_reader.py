@@ -46,11 +46,11 @@ def read_fits_b_mode(fpath, nside):
     
 
 fits_func_dict = {
-    const.U :      read_fits_u,
-    const.T :      read_fits_temp,
-    const.P :      read_fits_p_stregth,
-    const.E_MODE : read_fits_e_mode,
-    const.B_MODE : read_fits_b_mode,
+    const.OBS_U :      read_fits_u,
+    const.OBS_T :      read_fits_temp,
+    const.OBS_P :      read_fits_p_stregth,
+    const.OBS_E_MODE : read_fits_e_mode,
+    const.OBS_B_MODE : read_fits_b_mode,
 }
 
 
