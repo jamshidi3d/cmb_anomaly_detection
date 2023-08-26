@@ -30,14 +30,17 @@ tex_geom_dict = {
     const.FULL_SKY_FLAG: r"\mathrm{full\;sky}"
 }
 tex_measure_dict = {
-    const.STD_FLAG:     r'$\sigma_{geom1}(observable)$',
+    const.STD_FLAG:     r'$\sigma_{geom1}({observable})$',
     const.D_STD2_FLAG:  r'$[\sigma_{geom1}({observable}) - \sigma_{geom2}({observable})]^2$',
     const.NORM_CORR_FLAG: \
         r'$\frac {{\int [C_{tpcf_mode}^{{geom1}}(\gamma)]^2 d\gamma }}{{\int [C_{tpcf_mode}^{{full_sky}}(\gamma)]^2 d\gamma }} - 1$',
     const.D_CORR2_FLAG: \
-        r'$\int [C_{tpcf_mode}^{{geom1}}(\gamma) - C_{tpcf_mode}^{{geom2}}(\gamma)]^2 d\gamma$'
-    # const.NORM_STD_FLAG:
-    # const.NORM_D_STD2_FLAG:
+        r'$\int [C_{tpcf_mode}^{{geom1}}(\gamma) - C_{tpcf_mode}^{{geom2}}(\gamma)]^2 d\gamma$',
+    const.NORM_STD_FLAG: \
+        r'$\sigma_{geom1}({observable}) / \sigma_{full_sky}({observable})$',
+    const.NORM_D_STD2_FLAG: \
+        r'$[\frac{{ \sigma_{geom1}({observable}) }}{{ \sigma_{full_sky}({observable}) }} - ' +\
+            r'\frac{{ \sigma_{geom2}({observable}) }}{{ \sigma_{full_sky}({observable}) }}]^2$'
     # const.MEAN_FLAG:
 }
 def get_measure_tex(**kwargs):

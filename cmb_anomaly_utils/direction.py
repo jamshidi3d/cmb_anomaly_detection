@@ -23,7 +23,7 @@ def align_pole_to_average(pix_map:PixMap,
                                      top_ratio,
                                      all_dir_lat,
                                      all_dir_lon)
-    pix_map.change_pole(plat, plon )
+    pix_map.change_pole(plat, plon)
     return plat, plon
 
 def align_pole_to_mac(pix_map:PixMap,
@@ -40,7 +40,7 @@ def align_pole_to_mac(pix_map:PixMap,
                                 geom_range,
                                 all_dir_lat,
                                 all_dir_lon)
-    pix_map.change_pole(plat, plon )
+    pix_map.change_pole(plat, plon)
     return plat, plon
 
 # ------- Find direction methods -------

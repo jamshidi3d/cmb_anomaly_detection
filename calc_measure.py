@@ -1,8 +1,3 @@
-#
-#
-# This script provides a faster way to read maps and inputs!
-#
-#
 import os
 import numpy as np
 import cmb_anomaly_utils as cau
@@ -22,7 +17,7 @@ run_inputs.nside                = 64
 run_inputs.dir_nside            = 16
 run_inputs.geom_start           = 0
 run_inputs.geom_stop            = 180
-run_inputs.delta_geom_samples   = 1
+run_inputs.delta_geom_samples   = 5
 run_inputs.strip_thickness      = 20
 run_inputs.pole_lat             = -10
 run_inputs.pole_lon             = 221

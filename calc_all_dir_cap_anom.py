@@ -1,10 +1,3 @@
-#
-#
-# This script computes measures, for caps in different sizes and 
-# different directions in CMB
-#
-#
-
 import numpy as np
 import healpy as hp
 
