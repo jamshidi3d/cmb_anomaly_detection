@@ -11,6 +11,7 @@ def ensure_path(path):
     does_exist = os.path.exists(path)
     if not does_exist:
         os.makedirs(path)
+    return path
 
 def ensure_output_path(base_path = './', **kwargs):
     mask_txt:str     = 'masked' if kwargs.get(const.KEY_IS_MASKED) else 'inpainted'
@@ -37,10 +38,10 @@ tex_measure_dict = {
     const.D_CORR2_FLAG: \
         r'$\int [C_{tpcf_mode}^{{geom1}}(\gamma) - C_{tpcf_mode}^{{geom2}}(\gamma)]^2 d\gamma$',
     const.NORM_STD_FLAG: \
-        r'$\sigma_{geom1}({observable}) / \sigma_{full_sky}({observable})$',
+        r'$\sigma_{geom1}({observable}) / \sigma_{full_sky}({observable}) - 1$',
     const.NORM_D_STD2_FLAG: \
-        r'$[\frac{{ \sigma_{geom1}({observable}) }}{{ \sigma_{full_sky}({observable}) }} - ' +\
-            r'\frac{{ \sigma_{geom2}({observable}) }}{{ \sigma_{full_sky}({observable}) }}]^2$'
+        r'$\frac{{ 1 }}{{ \sigma_{full_sky}({observable}) }} ' +\
+            r'[\sigma_{geom1}({observable}) - \sigma_{geom2}({observable})]^2$'
     # const.MEAN_FLAG:
 }
 def get_measure_tex(**kwargs):

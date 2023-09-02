@@ -31,8 +31,8 @@ map_gen = cau.run_utils.MapGenerator(**run_inputs.to_kwargs())
 
 all_dir_lat, all_dir_lon = cau.coords.get_healpix_latlon(run_inputs.dir_nside)
 
-ndir, ngeom = len(dir_cap_sizes), len(run_inputs.geom_range)
-_results = np.zeros((ndir, ngeom))
+ndir_caps, ngeom = len(dir_cap_sizes), len(run_inputs.geom_range)
+_results = np.zeros((ndir_caps, ngeom))
 
 print("- Computing CMB measures")
 

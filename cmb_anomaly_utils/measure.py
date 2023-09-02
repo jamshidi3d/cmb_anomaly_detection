@@ -75,7 +75,7 @@ def calc_std(patch1:PixMap, patch2:PixMap = None, **kwargs):
 
 def calc_norm_std(patch1:PixMap, patch2:PixMap = None, **kwargs):
     std_full = kwargs.get(const.KEY_STD_FULL, 1)
-    return calc_std(patch1) / std_full
+    return calc_std(patch1) / std_full - 1
 
 def calc_dstd2(patch1:PixMap, patch2:PixMap, **kwargs):
     return (calc_std(patch1) - calc_std(patch2))**2
