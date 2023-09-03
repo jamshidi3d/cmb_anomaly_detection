@@ -1,19 +1,23 @@
 import os
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
 
 from . import const
 
-# ------- Path generators -------
+# ------- Path methods -------
+def does_path_exist(path):
+    return os.path.exists(path)
+
 def ensure_path(path):
     '''Create path if doesn't exist'''
-    does_exist = os.path.exists(path)
-    if not does_exist:
+    if not does_path_exist(path):
         os.makedirs(path)
     return path
 
 def ensure_output_path(base_path = './', **kwargs):
+    path = get_output_path(base_path, **kwargs)
+    ensure_path(path)
+    return path
+
+def get_output_path(base_path = './', **kwargs):
     mask_txt:str     = 'masked' if kwargs.get(const.KEY_IS_MASKED) else 'inpainted'
     geom_flag:str    = kwargs.get(const.KEY_GEOM_FLAG)
     measure_flag:str = kwargs.get(const.KEY_MEASURE_FLAG)
@@ -21,10 +25,9 @@ def ensure_output_path(base_path = './', **kwargs):
     path = bpath + "{}/{}/{}/".format(mask_txt.lower(),
                                       geom_flag.lower(),
                                       measure_flag.lower())
-    ensure_path(path)
     return path
 
-# ------- TeX generators -------
+# ------- TeX strings -------
 tex_geom_dict = {
     const.CAP_FLAG:     (r"\mathrm{top}", r"\mathrm{bottom}"),
     const.STRIP_FLAG:   (r"\mathrm{strip}", r"\mathrm{rest\;of\;sky}"),

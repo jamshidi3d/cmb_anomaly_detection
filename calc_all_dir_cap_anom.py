@@ -1,41 +1,52 @@
+import os
 import numpy as np
-import healpy as hp
-
-import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use('Agg')
-
-import read_cmb_maps_params as rmp
 import cmb_anomaly_utils as cau
-from cmb_anomaly_utils.dtypes import PixMap
 
-_inputs = rmp.get_inputs()
+max_sim_num                     = 1000
+base_path                       = "./output/"
+run_inputs  = cau.run_utils.RunInputs()
+run_inputs.mask_fpath           = "./input/cmb_fits_files/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
+run_inputs.cmb_fpath            = "./input/cmb_fits_files/COM_CMB_IQU-commander_2048_R3.00_full.fits"
+run_inputs.cmb_dir_anom_fpath   = "./output/cmb_inpainted_all_dir_cap_anom.txt"
+run_inputs.sims_path            = "./input/commander_sims/"
+run_inputs.sims_dir_anom_path   = "./output/sims_inpainted_all_dir_cap_anom_5deg/"
+run_inputs.geom_flag            = cau.const.CAP_FLAG
+run_inputs.measure_flag         = cau.const.STD_FLAG
+run_inputs.nside                = 64
+run_inputs.dir_nside            = 16
+run_inputs.geom_start           = 0
+run_inputs.geom_stop            = 180
+run_inputs.delta_geom_samples   = 5
+run_inputs.strip_thickness      = 20
 
-dir_nside                   = 16
-_inputs['nside']            = 64
-_inputs['is_masked']        = False
-_inputs['min_pix_ratio']    = 0.7
-_inputs['pole_lat']         = 90
-_inputs['pole_lon']         = 0
-_inputs['measure_flag']     = cau.const.STD_FLAG
-_inputs['measure_start']    = 0
-_inputs['measure_stop']     = 180
-_inputs['nmeasure_samples'] = 181
-_inputs['geom_flag']        = cau.const.CAP_FLAG
-_inputs['geom_start']       = 10
-_inputs['geom_stop']        = 90
-dtheta                      = 5
-_inputs['ngeom_samples']    = 1 + int((_inputs['geom_stop'] - _inputs['geom_start']) / dtheta)
-_inputs['measure_range']    = cau.stat_utils.get_measure_range(**_inputs)
-_inputs['geom_range']       = cau.stat_utils.get_geom_range(**_inputs)
 
-# all directions that we look for
-npix     = 12 * dir_nside ** 2
-dir_lon, dir_lat = hp.pix2ang(dir_nside, np.arange(npix), lonlat = True)
+output_path = cau.output.ensure_path(base_path)
+map_gen = cau.run_utils.MapGenerator(**run_inputs.to_kwargs())
 
-# direction for cmb
-mask_txt = 'masked' if _inputs.get('is_masked') else 'inpainted'
-print("finding direction for cmb")
-cmb_pd : PixMap = rmp.get_cmb_pixdata(**_inputs)
-cmb_all_dir_anom  = cau.measure.calc_measure_in_all_dir(cmb_pd, dir_lat, dir_lon, **_inputs)
-np.savetxt(f"./output/cmb_{mask_txt}_all_dir_cap_anom.txt", cmb_all_dir_anom)
+
+np.savetxt(output_path + "inpainted_all_dir_geom_range.txt", run_inputs.geom_range)
+
+all_dir_lat, all_dir_lon = cau.coords.get_healpix_latlon(run_inputs.dir_nside)
+
+print("- Computing CMB all dir measures")
+cmb_map     = map_gen.create_cmb_map()
+_results    = cau.measure.calc_measure_in_all_dir(cmb_map,
+                                                  all_dir_lat,
+                                                  all_dir_lon,
+                                                  **run_inputs.to_kwargs())
+np.savetxt(run_inputs.cmb_dir_anom_fpath,
+           _results)
+
+print("- Computing Simulations all dir measures")
+def print_sim_num(sim_num):
+    print("{:03}\r".format(sim_num), end="")
+
+for sim_num in range(max_sim_num):
+    print_sim_num(sim_num)
+    sim_map     = map_gen.create_sim_map_from_txt(sim_num)
+    _results    = cau.measure.calc_measure_in_all_dir(sim_map,
+                                                      all_dir_lat,
+                                                      all_dir_lon,
+                                                      **run_inputs.to_kwargs())
+    fpath    = run_inputs.sims_dir_anom_path + "sim{:03}_all_dir_cap_anom.txt".format(sim_num)
+    np.savetxt(fpath, _results)

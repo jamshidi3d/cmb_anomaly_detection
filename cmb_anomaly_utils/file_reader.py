@@ -2,9 +2,8 @@ import numpy as np
 import healpy as hp
 import os
 
-from . import coords, const
+from . import coords, const, output
 from .dtypes import PixMap
-
 
 def read_txt_attr(fpath):
     attr_arr  = np.loadtxt(fpath)
@@ -53,5 +52,54 @@ fits_func_dict = {
     const.OBS_B_MODE : read_fits_b_mode,
 }
 
+# ------- Precalculated measures -------
+def get_fnames_in_dir(path):
+    return [fname for fname in os.listdir(path) \
+            if os.path.isfile(os.path.join(path, fname))]
+
+def check_precalc_name(fname, cmb_or_sim:bool, dir_cap_size):
+    data_sign = "cmb" if cmb_or_sim else "sim"
+    geom_sign = str(int(dir_cap_size)) + "cap"
+    return geom_sign in fname and \
+            data_sign in fname and \
+                "measure" in fname
+
+def read_geom_range_precalc(base_path, **kwargs):
+    '''Provides and easy access to geom range file\n
+    use cases are in computing a_l and plotting etc.'''
+    path = output.get_output_path(base_path, **kwargs)
+    if not output.does_path_exist(path):
+        print("measure is not computed yet!")
+        return None
+    fnames = [fname for fname in os.listdir(path) if 'range' in fname]
+    return np.loadtxt(path + fnames[0])
+
+def read_cmb_precalc(base_path, dir_cap_size, **kwargs):
+    path = output.get_output_path(base_path, **kwargs)
+    if not output.does_path_exist(path):
+        print("Measure is not computed yet!")
+        return None
+    fnames  =  [f_n for f_n in os.listdir(path) \
+               if check_precalc_name(f_n, True, dir_cap_size)]
+    if len(fnames) == 0:
+        print("Measure is not computed yet!")
+        return None
+    return np.loadtxt(path + fnames[0])
+
+# Note that this is a generator not a function so 
+# it must be used in a loop or so
+def iter_read_sims_precalc(base_path, dir_cap_size, **kwargs):
+    path = output.get_output_path(base_path, **kwargs)
+    if not output.does_path_exist(path):
+        print("Measure is not computed yet!")
+        yield None
+        return
+    fnames =  [f_n for f_n in os.listdir(path) \
+               if check_precalc_name(f_n, False, dir_cap_size)]
+    for f_n in fnames:
+        _result = np.loadtxt(path + f_n)
+        yield _result
+
+    
 
 
