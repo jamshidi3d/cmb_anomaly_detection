@@ -4,7 +4,7 @@ import cmb_anomaly_utils as cau
 
 base_path                       = "./output/measure_results_mac_dir/"
 max_sim_num                     = 1000
-max_l                           = 10
+max_l                           = 20
 run_inputs  = cau.run_utils.RunInputs()
 run_inputs.mask_fpath           = "./input/cmb_fits_files/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
 run_inputs.cmb_fpath            = "./input/cmb_fits_files/COM_CMB_IQU-commander_2048_R3.00_full.fits"
@@ -12,7 +12,7 @@ run_inputs.cmb_dir_anom_fpath   = "./output/cmb_inpainted_all_dir_cap_anom.txt"
 run_inputs.sims_path            = "./input/commander_sims/"
 run_inputs.sims_dir_anom_path   = "./output/sims_inpainted_all_dir_cap_anom_5deg/"
 run_inputs.geom_flag            = cau.const.STRIP_FLAG
-run_inputs.measure_flag         = cau.const.NORM_STD_FLAG
+run_inputs.measure_flag         = cau.const.STD_FLAG
 run_inputs.nside                = 64
 run_inputs.dir_nside            = 16
 run_inputs.geom_start           = 0

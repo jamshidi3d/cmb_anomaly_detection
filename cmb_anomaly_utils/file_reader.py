@@ -57,12 +57,12 @@ def get_fnames_in_dir(path):
     return [fname for fname in os.listdir(path) \
             if os.path.isfile(os.path.join(path, fname))]
 
-def check_precalc_name(fname, cmb_or_sim:bool, dir_cap_size):
-    data_sign = "cmb" if cmb_or_sim else "sim"
-    geom_sign = str(int(dir_cap_size)) + "cap"
-    return geom_sign in fname and \
-            data_sign in fname and \
-                "measure" in fname
+# These are not clean functions! need to be rewritten
+def check_precalc_name(fname:str, dir_cap_size, cmb_or_sim_key:str, measure_or_a_l_key:str):
+    dir_geom_check  = str(int(dir_cap_size)) + "cap" in fname.lower()
+    data_check      = cmb_or_sim_key.lower() in fname.lower()
+    res_type_check  = measure_or_a_l_key.lower() in fname.lower()
+    return data_check and dir_geom_check and res_type_check
 
 def read_geom_range_precalc(base_path, **kwargs):
     '''Provides and easy access to geom range file\n
@@ -80,14 +80,26 @@ def read_cmb_precalc(base_path, dir_cap_size, **kwargs):
         print("Measure is not computed yet!")
         return None
     fnames  =  [f_n for f_n in os.listdir(path) \
-               if check_precalc_name(f_n, True, dir_cap_size)]
+               if check_precalc_name(f_n, dir_cap_size, 'cmb', 'measure')]
     if len(fnames) == 0:
         print("Measure is not computed yet!")
         return None
     return np.loadtxt(path + fnames[0])
 
-# Note that this is a generator not a function so 
-# it must be used in a loop or so
+def read_cmb_a_l(base_path, dir_cap_size, **kwargs):
+    path = output.get_output_path(base_path, **kwargs)
+    if not output.does_path_exist(path):
+        print("Measure is not computed yet!")
+        return None
+    fnames  =  [f_n for f_n in os.listdir(path) \
+               if check_precalc_name(f_n, dir_cap_size, 'cmb', 'a_l')]
+    if len(fnames) == 0:
+        print("Measure is not computed yet!")
+        return None
+    return np.loadtxt(path + fnames[0])
+
+# Note that these are generators not functions so 
+# they must be used in a loop or so
 def iter_read_sims_precalc(base_path, dir_cap_size, **kwargs):
     path = output.get_output_path(base_path, **kwargs)
     if not output.does_path_exist(path):
@@ -95,11 +107,22 @@ def iter_read_sims_precalc(base_path, dir_cap_size, **kwargs):
         yield None
         return
     fnames =  [f_n for f_n in os.listdir(path) \
-               if check_precalc_name(f_n, False, dir_cap_size)]
+               if check_precalc_name(f_n, dir_cap_size, 'sim', 'measure')]
     for f_n in fnames:
         _result = np.loadtxt(path + f_n)
         yield _result
 
+def iter_read_sims_a_l(base_path, dir_cap_size, **kwargs):
+    path = output.get_output_path(base_path, **kwargs)
+    if not output.does_path_exist(path):
+        print("Measure is not computed yet!")
+        yield None
+        return
+    fnames =  [f_n for f_n in os.listdir(path) \
+               if check_precalc_name(f_n, dir_cap_size, 'sim', 'a_l')]
+    for f_n in fnames:
+        _result = np.loadtxt(path + f_n)
+        yield _result
     
 
 
