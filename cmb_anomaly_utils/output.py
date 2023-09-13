@@ -43,7 +43,7 @@ tex_measure_dict = {
     const.NORM_STD_FLAG: \
         r'$\sigma_{geom1}({observable}) / \sigma_{full_sky}({observable}) - 1$',
     const.NORM_D_STD2_FLAG: \
-        r'$\frac{{ 1 }}{{ \sigma_{full_sky}({observable}) }} ' +\
+        r'$\frac{{ 1 }}{{ \sigma_{full_sky}({observable})^2 }} ' +\
             r'[\sigma_{geom1}({observable}) - \sigma_{geom2}({observable})]^2$'
     # const.MEAN_FLAG:
 }

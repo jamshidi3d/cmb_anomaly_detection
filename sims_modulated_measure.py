@@ -1,114 +1,63 @@
-# 
-# 
-# This script:
-#   1. calculates measures for strips of the CMB in the MostAnomalousCap(MAC)
-#   2. reads the legendre coefficients from that measure-function (which is a function of theta)
-#   3. applies the modulation on 1000 simulations
-#   4. calculates measures for stripes on this modulated simulations
-#   5. reads legendre coefficients from modulated simulations
-# this would be used to find errorbars of legendre coefficients
-# there are two ways for applying modulation on simulation:
-#       [for reading errorbars]
-#       1.applying l by l (from cmb to simluation, single l for each time)
-#       [for reading measure values]
-#       2.applying all l's at once 
-# (plots are involved in plotting.ipynb)
-#
+import os
 import numpy as np
-
-import matplotlib.pyplot as plt
-import matplotlib
-
 import cmb_anomaly_utils as cau
-import read_cmb_maps_params as rmp
-from cmb_anomaly_utils.dtypes import PixMap
-from cmb_anomaly_utils import math_utils as mu
 
-sims_path = './input/commander_sims/'
-_inputs = rmp.get_inputs()
+base_path                       = "./output/measure_results_mac_dir/"
+max_sim_num                     = 1000
+max_l                           = 20
+npoles                          = 3
 
-# possible modulation modes
-ALL_L_MODE = "ALL_L_MODE"
-SINGLE_L_MODE = "SINGLE_L_MODE"
+run_inputs  = cau.run_utils.RunInputs()
+run_inputs.mask_fpath           = "./input/cmb_fits_files/COM_Mask_CMB-common-Mask-Int_2048_R3.00.fits"
+run_inputs.cmb_fpath            = "./input/cmb_fits_files/COM_CMB_IQU-commander_2048_R3.00_full.fits"
+run_inputs.cmb_dir_anom_fpath   = "./output/cmb_inpainted_all_dir_cap_anom.txt"
+run_inputs.sims_path            = "./input/commander_sims/"
+run_inputs.sims_dir_anom_path   = "./output/sims_inpainted_all_dir_cap_anom_5deg/"
+run_inputs.geom_flag            = cau.const.STRIP_FLAG
+run_inputs.measure_flag         = cau.const.STD_FLAG
+run_inputs.nside                = 64
+run_inputs.dir_nside            = 16
+run_inputs.geom_start           = 0
+run_inputs.geom_stop            = 180
+run_inputs.delta_geom_samples   = 1
+run_inputs.strip_thickness      = 20
+run_inputs.pole_lat             = -10
+run_inputs.pole_lon             = 221
 
-# running mode
-mod_mode = ALL_L_MODE
+dir_cap_sizes       = [30]#cau.stat_utils.get_range(20, 70, 10)
+pre_dir_cap_sizes   = cau.stat_utils.get_range(10, 90, 5)
 
-# run parameters
-max_l       = 10
-max_sim_num = 1000
+map_gen     = cau.run_utils.MapGenerator(**run_inputs.to_kwargs())
+cmb_a_l     = cau.file_reader.read_cmb_a_l(base_path, dir_cap_sizes[0], **run_inputs.to_kwargs())
+sims_a_l    = np.zeros((max_sim_num * npoles, max_l + 1))
 
-_inputs['nside']            = 64
-_inputs['geom_start']       = 0
-_inputs['geom_stop']        = 180
-_inputs['nsamples']         = 1 + 180
-_inputs['measure_flag']     = cau.const.STD_FLAG
-_inputs['geom_flag']        = cau.const.STRIP_FLAG
-_inputs['geom_range']       = cau.stat_utils.get_geom_range(**_inputs)
-# This is the measure that we take from simulations
-measure_to_look             = cau.const.STD_FLAG
+def print_sim_num(sim_num):
+    print("{:03}\r".format(sim_num), end="")
 
-geom_range = _inputs['geom_range']
-
-
-def get_modulated_measure_from_sim(sim_num, modulation_factor):
-    print(f'sim number {sim_num:04} \r', end='')
-    try:
-        sim_temp = cau.file_reader.read_txt_attr(sims_path, 'T', sim_num)
-    except:
-        print("simulation number {:05} is currupted!".format(sim_num))
-        return None
-    sim_pix_map        = cau.dtypes.PixMap(sim_temp, np.copy(sim_pos))
-    sim_pix_map.data  *= modulation_factor
-    sim_measure_results = cau.measure.get_strip_measure(sim_pix_map , **_inputs)
-    return sim_measure_results
-
-
-# take legendre expansion of cmb first
-cmb_pix_map        = rmp.get_cmb_pixdata(**_inputs)
-cmb_measure_results = cau.measure.get_strip_measure(cmb_pix_map , **_inputs)
-
-# convert degree to radians to compute legendre coeffs
-cmb_a_l = mu.get_all_legendre_modulation(geom_range * np.pi / 180, cmb_measure_results, max_l)
-np.savetxt('./output/cmb_a_l.txt', cmb_a_l)
-
-# change probe after modulation
-_inputs['measure_flag'] = measure_to_look
-
-sims_a_l        = np.zeros((max_sim_num, max_l + 1))
-sims_results    = np.zeros((max_sim_num, len(geom_range)))
-sim_pos         = cau.file_reader.read_pos(_inputs['nside'])
-
-# modulate each l separately
-if mod_mode == SINGLE_L_MODE:
-    for nonzero_l in range(max_l + 1):
-        print(nonzero_l)
-        single_cmb_a_l = np.copy(cmb_a_l)
-        single_cmb_a_l[:nonzero_l] = 0
-        single_cmb_a_l[nonzero_l + 1:] = 0
-        
+for nonzero_l in range(max_l + 1):
+    # modulate each l separately
+    print(f"l = {nonzero_l}")
+    single_cmb_a_l = np.copy(cmb_a_l)
+    single_cmb_a_l[:nonzero_l] = 0
+    single_cmb_a_l[nonzero_l + 1:] = 0
+    
+    for p_i, pole_lat, pole_lon  in \
+        [[0, 0 , 0], [1, 0, -90], [2, 90, 0]]:
+        print(f"plat = {pole_lat}, plon = {pole_lon}")
         # single l factor
+        sim_pos = np.copy(map_gen.pos)
+        sim_pos = cau.coords.rotate_pole_to_north(sim_pos, pole_lat, pole_lon)
         modulation_factor = cau.math_utils.create_legendre_modulation_factor(sim_pos, single_cmb_a_l)
         for sim_num in range(max_sim_num):
-            sim_measure_results = get_modulated_measure_from_sim(sim_num, modulation_factor)
-            if sim_measure_results is None:
-                continue
-            s_a_l = mu.get_single_legendre_modulation(geom_range * np.pi / 180,
-                                                    sim_measure_results,
-                                                    nonzero_l)
-            sims_a_l[sim_num, nonzero_l] = s_a_l
-        print()
-    np.savetxt('./output/sims_modulated_a_l.txt', sims_a_l)
+            print_sim_num(sim_num)
+            sim_pix = map_gen.create_sim_map_from_txt(sim_num)
+            sim_pix.raw_pos = sim_pos
+            sim_pix.add_modulation(modulation_factor)
+            sim_measure = cau.measure.get_measure(sim_pix, **run_inputs.to_kwargs())
+            s_a_l = cau.math_utils.get_single_legendre_modulation(
+                                                            run_inputs.geom_range * np.pi / 180,
+                                                            sim_measure,
+                                                            nonzero_l)
+            sims_a_l[sim_num * npoles + p_i, nonzero_l] = s_a_l
+np.savetxt('./output/sims_modulated_a_l.txt', sims_a_l)
 
-
-# all l's at the same time
-if mod_mode == ALL_L_MODE:
-    modulation_factor = cau.math_utils.create_legendre_modulation_factor(sim_pos, cmb_a_l)
-    for sim_num in range(max_sim_num):
-        sim_measure_results = get_modulated_measure_from_sim(sim_num, modulation_factor)
-        if sim_measure_results is None:
-            continue
-        sims_results[sim_num] = sim_measure_results
-    print()
-
-    np.savetxt('./output/sims_modulated_{}.txt'.format(_inputs['measure_flag'].lower()), sims_results)
