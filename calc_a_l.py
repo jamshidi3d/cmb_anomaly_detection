@@ -11,14 +11,14 @@ run_inputs.cmb_fpath            = "./input/cmb_fits_files/COM_CMB_IQU-commander_
 run_inputs.cmb_dir_anom_fpath   = "./output/cmb_inpainted_all_dir_cap_anom.txt"
 run_inputs.sims_path            = "./input/commander_sims/"
 run_inputs.sims_dir_anom_path   = "./output/sims_inpainted_all_dir_cap_anom_5deg/"
-run_inputs.geom_flag            = cau.const.STRIP_FLAG
+run_inputs.geom_flag            = cau.const.STRIPE_FLAG
 run_inputs.measure_flag         = cau.const.STD_FLAG
 run_inputs.nside                = 64
 run_inputs.dir_nside            = 16
 run_inputs.geom_start           = 0
 run_inputs.geom_stop            = 180
 run_inputs.delta_geom_samples   = 5
-run_inputs.strip_thickness      = 20
+run_inputs.stripe_thickness      = 20
 run_inputs.pole_lat             = -10
 run_inputs.pole_lon             = 221
 

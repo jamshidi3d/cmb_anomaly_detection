@@ -30,7 +30,7 @@ def get_output_path(base_path = './', **kwargs):
 # ------- TeX strings -------
 tex_geom_dict = {
     const.CAP_FLAG:     (r"\mathrm{top}", r"\mathrm{bottom}"),
-    const.STRIP_FLAG:   (r"\mathrm{strip}", r"\mathrm{rest\;of\;sky}"),
+    const.STRIPE_FLAG:   (r"\mathrm{stripe}", r"\mathrm{rest\;of\;sky}"),
     const.FULL_SKY_FLAG: r"\mathrm{full\;sky}"
 }
 tex_measure_dict = {
@@ -61,7 +61,7 @@ def get_measure_tex(**kwargs):
 
 title_text_dict = {
     const.CAP_FLAG:     r'Cap Size',
-    const.STRIP_FLAG:   r'Strip Center'
+    const.STRIPE_FLAG:   r'Stripe Center'
 }
 def get_title_tex(**kwargs):
     measure_text = get_measure_tex(**kwargs)
@@ -87,7 +87,7 @@ def get_ylabel_tex(**kwargs):
 
 tex_xlabel = {
     const.CAP_FLAG:   r'Cap Radius[$^\circ$]',
-    const.STRIP_FLAG: r'Strip Center[$^\circ$]'
+    const.STRIPE_FLAG: r'Stripe Center[$^\circ$]'
 }
 def get_xlabel_tex(**kwargs):
     geom_flag    = kwargs.get(const.KEY_GEOM_FLAG)

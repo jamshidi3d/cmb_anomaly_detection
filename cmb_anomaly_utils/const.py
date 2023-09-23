@@ -4,7 +4,7 @@ RING                = 'RING'
 
 # ------- Grometry flags -------
 CAP_FLAG            = 'CAP'
-STRIP_FLAG          = 'STRIP'
+STRIPE_FLAG         = 'STRIPE'
 FULL_SKY_FLAG       = 'FULL_SKY'
 # ------- Measure flags -------
 NORM_CORR_FLAG      = 'NORM_CORR'
@@ -57,7 +57,7 @@ KEY_GEOM_START          = 'geom_start'
 KEY_GEOM_STOP           = 'geom_stop'
 KEY_DGEOM_SAMPLES       = 'dgeom_samples'
 KEY_GEOM_RANGE          = 'geom_range'
-KEY_STRIP_THICKNESS     = 'strip_thickness'
+KEY_STRIPE_THICKNESS    = 'stripe_thickness'
 KEY_MAX_VALID_ANG       = 'max_valid_ang'
 KEY_CORR_FULL_INT       = 'corr_full_integral'
 KEY_STD_FULL            = 'std_full'

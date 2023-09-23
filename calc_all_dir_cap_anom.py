@@ -17,7 +17,7 @@ run_inputs.dir_nside            = 16
 run_inputs.geom_start           = 0
 run_inputs.geom_stop            = 180
 run_inputs.delta_geom_samples   = 5
-run_inputs.strip_thickness      = 20
+run_inputs.stripe_thickness      = 20
 
 
 output_path = cau.output.ensure_path(base_path)

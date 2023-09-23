@@ -5,7 +5,7 @@ from . import const, coords, file_reader as freader, stat_utils
 from .dtypes import PixMap
 
 class MapGenerator:
-    '''This class generates PixMap(s) that are used for cap and strip computation\n
+    '''This class generates PixMap(s) that are used for cap and stripe computation\n
     - kwargs: \n
     observable - nside - is_masked \n
     sims_path - cmb_fpath - mask_fpath'''
@@ -64,7 +64,7 @@ class RunInputs:
         self._geom_start        = kwargs.get(const.KEY_GEOM_START,       0)
         self._geom_stop         = kwargs.get(const.KEY_GEOM_STOP,        180)
         self._dgeom_samples     = kwargs.get(const.KEY_DGEOM_SAMPLES,    5)
-        self.strip_thickness    = kwargs.get(const.KEY_STRIP_THICKNESS,  20)
+        self.stripe_thickness    = kwargs.get(const.KEY_STRIPE_THICKNESS,  20)
         self.set_geom_range()
         self.set_measure_range()
 
@@ -173,5 +173,5 @@ class RunInputs:
         kwargs.setdefault(const.KEY_DMEASURE_SAMPLES, self.delta_measure_samples)
         kwargs.setdefault(const.KEY_CUTOFF_RATIO,     self.cutoff_ratio)
         kwargs.setdefault(const.KEY_NDATA_CHUNKS,     self.ndata_chunks)
-        kwargs.setdefault(const.KEY_STRIP_THICKNESS,  self.strip_thickness)
+        kwargs.setdefault(const.KEY_STRIPE_THICKNESS,  self.stripe_thickness)
         return kwargs

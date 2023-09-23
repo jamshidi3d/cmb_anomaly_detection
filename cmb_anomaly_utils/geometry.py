@@ -13,27 +13,27 @@ def get_top_bottom_caps(pix_map: PixMap, cap_angle):
     bottom_cap       = pix_map.extract_selection(bottom_selection)
     return top_cap, bottom_cap
 
-def get_strip(pix_map:PixMap, start_angle, stop_angle):
-    '''returns a strip between given angles and the rest of sky\n
+def get_stripe(pix_map:PixMap, start_angle, stop_angle):
+    '''returns a stripe between given angles and the rest of sky\n
     start and stop angles have to be in degrees'''
     z_start         = coords.angle_to_z(start_angle)
     z_stop          = coords.angle_to_z(stop_angle)
-    strip_selection = (z_start >= pix_map.raw_pos[:, 2]) * (pix_map.raw_pos[:, 2] >= z_stop)
-    strip           = pix_map.extract_selection(strip_selection)
-    r_o_s_selection = np.logical_not(strip_selection)
+    stripe_selection = (z_start >= pix_map.raw_pos[:, 2]) * (pix_map.raw_pos[:, 2] >= z_stop)
+    stripe           = pix_map.extract_selection(stripe_selection)
+    r_o_s_selection = np.logical_not(stripe_selection)
     rest_of_sky     = pix_map.extract_selection(r_o_s_selection)
-    return strip, rest_of_sky
+    return stripe, rest_of_sky
 
-def get_strip_limits(strip_thickness, geom_range):
+def get_stripe_limits(stripe_thickness, geom_range):
     def clamp_to_sphere_degree(value):
         return 180 / np.pi * np.arccos(np.clip(value, -1, 1))
-    height          = 1 - np.cos(strip_thickness * np.pi / 180)
-    strip_mid_locs  = np.cos(geom_range * np.pi / 180)
-    # strip starts
-    top_lim         = strip_mid_locs + height / 2
-    strip_starts    = clamp_to_sphere_degree(top_lim)
-    # strip ends
-    bottom_lim      = strip_mid_locs - height / 2
-    strip_ends      = clamp_to_sphere_degree(bottom_lim)
-    strip_centers   = np.copy(geom_range)
-    return strip_starts, strip_centers, strip_ends
+    height          = 1 - np.cos(stripe_thickness * np.pi / 180)
+    stripe_mid_locs  = np.cos(geom_range * np.pi / 180)
+    # stripe starts
+    top_lim         = stripe_mid_locs + height / 2
+    stripe_starts    = clamp_to_sphere_degree(top_lim)
+    # stripe ends
+    bottom_lim      = stripe_mid_locs - height / 2
+    stripe_ends      = clamp_to_sphere_degree(bottom_lim)
+    stripe_centers   = np.copy(geom_range)
+    return stripe_starts, stripe_centers, stripe_ends

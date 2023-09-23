@@ -28,7 +28,7 @@ def calc_measure_in_all_dir(cmb_pd: PixMap, dir_lat_arr, dir_lon_arr, **kwargs):
     all_dir_measure = np.zeros((ndir, nsamples))
     pix_pos         = np.copy(cmb_pd.raw_pos)
     get_measure     = get_cap_measure if kwargs.get(const.KEY_GEOM_FLAG) == const.CAP_FLAG \
-                        else get_strip_measure
+                        else get_stripe_measure
     for i in range(ndir):
         print(f"{i + 1}/{ndir} \r", end="")
         cmb_pd.raw_pos = coords.rotate_pole_to_north(pix_pos, dir_lat_arr[i], dir_lon_arr[i])
@@ -101,8 +101,8 @@ def get_measure(sky_pix, **kwargs):
     geom_flag   = kwargs.get(const.KEY_GEOM_FLAG)
     if geom_flag == const.CAP_FLAG:
         return get_cap_measure(sky_pix, **kwargs)
-    elif geom_flag == const.STRIP_FLAG:
-        return get_strip_measure(sky_pix, **kwargs)
+    elif geom_flag == const.STRIPE_FLAG:
+        return get_stripe_measure(sky_pix, **kwargs)
     else:
         print("Selected geometry is not supported yet!")
 
@@ -134,34 +134,34 @@ def get_cap_measure(sky_pix:PixMap, **kwargs):
     return measure_results
 
 
-#---------- Strip ----------
-def get_strip_measure(sky_pix:PixMap, **kwargs):
+#---------- Stripe ----------
+def get_stripe_measure(sky_pix:PixMap, **kwargs):
     '''- kwargs: \n
-    sampling_range - strip_thickness - measure_flag\n
+    sampling_range - stripe_thickness - measure_flag\n
     cutoff_ratio - ndata_chunks
     '''
     min_pix_ratio   = kwargs.get(const.KEY_MIN_PIX_RATIO, 1)
     geom_range      = kwargs.get(const.KEY_GEOM_RANGE, su.get_range())
-    strip_thickness = kwargs.get(const.KEY_STRIP_THICKNESS, 20)
+    stripe_thickness = kwargs.get(const.KEY_STRIPE_THICKNESS, 20)
     measure_flag    = kwargs.get(const.KEY_MEASURE_FLAG, const.STD_FLAG)
     geom_range      = kwargs.get(const.KEY_GEOM_RANGE, su.get_range())
     _kwargs         = kwargs.copy()
-    strip_starts, strip_centers, strip_ends = geom.get_strip_limits(strip_thickness, geom_range)
+    stripe_starts, stripe_centers, stripe_ends = geom.get_stripe_limits(stripe_thickness, geom_range)
     _kwargs[const.KEY_CORR_FULL_INT] = calc_corr_full_integral(sky_pix, **_kwargs)
     _kwargs[const.KEY_STD_FULL]      = calc_std(sky_pix, None, **_kwargs)
     # Measure
     measure_func = func_dict[measure_flag]
     measure_results = np.zeros(len(geom_range))
-    for i in range(len(strip_centers)):
-        start, end          = strip_starts[i], strip_ends[i]
-        strip, rest_of_sky  = geom.get_strip(sky_pix, start, end)
+    for i in range(len(stripe_centers)):
+        start, end          = stripe_starts[i], stripe_ends[i]
+        stripe, rest_of_sky  = geom.get_stripe(sky_pix, start, end)
         # Remove invalid pixels
-        if strip.get_visible_pixels_ratio() < min_pix_ratio or \
+        if stripe.get_visible_pixels_ratio() < min_pix_ratio or \
                 rest_of_sky.get_visible_pixels_ratio() < min_pix_ratio:
             measure_results[i] = np.nan
             continue
         ang   = np.maximum(start, end)
         _kwargs.setdefault(const.KEY_MAX_VALID_ANG,
                            np.minimum(ang, 180 - ang))
-        measure_results[i] = measure_func(strip, rest_of_sky, **_kwargs)
+        measure_results[i] = measure_func(stripe, rest_of_sky, **_kwargs)
     return measure_results
