@@ -4,7 +4,15 @@ import numpy as np
 
 from . import math_utils as mu
 from . import file_reader
+from .dtypes import PixMap
 
+# ------ Remove Monopole/Dipole ------
+def remove_monopole_dipole(pix_map:PixMap):
+    result = hp.remove_dipole(pix_map.raw_data)
+    pix_map.raw_data = result.data
+    return result
+
+# ------ Map Filling ------
 def fill_map_with_cap(data_map, pole_lat, pole_lon, cap_size, fake_poles):
     nside = int(np.sqrt(len(data_map) / 12))
     filled_map = np.copy(data_map)

@@ -14,6 +14,14 @@ class PixMap:
         self.pole_lat = pole_lat
         self.pole_lon = pole_lon
     
+    @staticmethod
+    def create_dummy(nside):
+        npix = coords.get_npix(nside)
+        return PixMap(
+            np.arange(npix, dtype=int),
+            coords.get_healpix_xyz(nside)
+        )
+
     # ------ property methods ------
     @property
     def data(self):

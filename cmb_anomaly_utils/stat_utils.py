@@ -32,6 +32,7 @@ def get_top_cut_filter(val_arr, top_ratio = 0.1):
     _min_weight = _max - top_ratio * (_max - _min)
     _filter     = val_arr > _min_weight
     return _filter
+
 #----------- Parallel -----------
 def get_chunk_pix_map(pix_map:PixMap, block_size, block_num):
     start_i = block_num * block_size
@@ -113,6 +114,16 @@ def fast_std(arr):
 @njit(fastmath = True)
 def fast_mean(arr):
     return np.mean(arr)
+
+@njit(fastmath = True)
+def fast_var(arr):
+    return np.std(arr)
+
+def var_pix_map(pix_map:PixMap):
+    _data = pix_map.data
+    if len(_data) == 0:
+        return 0
+    return fast_var(_data)
 
 def std_pix_map(pix_map:PixMap):
     _data = pix_map.data

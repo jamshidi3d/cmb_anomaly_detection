@@ -70,6 +70,9 @@ def calc_norm_corr(patch1:PixMap, patch2:PixMap = None, **kwargs):
     geom_int    = mu.integrate_curve(measure_range[:max_index], tctt[:max_index] ** 2)
     return geom_int / f_int - 1
 
+def calc_var(patch1:PixMap, patch2:PixMap = None, **kwargs):
+    return su.var_pix_map(patch1)
+
 def calc_std(patch1:PixMap, patch2:PixMap = None, **kwargs):
     return su.std_pix_map(patch1)
 

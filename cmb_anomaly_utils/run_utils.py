@@ -15,21 +15,31 @@ class MapGenerator:
         self.is_masked   = kwargs.get(const.KEY_IS_MASKED, False)
         self.sims_path   = kwargs.get(const.KEY_SIMS_PATH, None)
         self.sims_fnames = os.listdir(self.sims_path)
+        self.noise_path  = kwargs.get(const.KEY_NOISE_PATH, None)
+        self.noise_fnames = os.listdir(self.noise_path)
         self.cmb_fpath   = kwargs.get(const.KEY_CMB_FPATH, None)
         self.mask_fpath  = kwargs.get(const.KEY_MASK_FPATH, None)
         self.mask        = freader.read_fits_mask(self.mask_fpath, self.nside) if self.is_masked else None
         self.pos         = coords.get_healpix_xyz(self.nside)
     
+    def create_dummy_map(self):
+        return PixMap(np.arange(len(self.pos)), self.pos, self.mask)
+
     def create_cmb_map(self):
         read_func   = freader.fits_func_dict[self.observable]
         _data       = read_func(self.cmb_fpath, self.nside)
         return PixMap(_data, self.pos, self.mask)
 
-    def create_sim_map_from_txt(self, num):
+    def create_sim_map_from_txt(self, num, use_noise = False):
         fpathname  = self.sims_path + self.sims_fnames[num]
         _data      = freader.read_txt_attr(fpathname)
-        if self.observable == const.OBS_T:
-            _data -= np.nanmean(_data)
+        if use_noise:
+            max_noise_num = len(self.noise_fnames)
+            fpathname = self.noise_path + self.noise_fnames[num % max_noise_num]
+            _noise = freader.read_txt_attr(fpathname)
+            _data += _noise
+        # if self.observable == const.OBS_T:
+        #     _data -= np.nanmean(_data)
         return PixMap(_data, self.pos, self.mask)
     
     # def create_sim_map_from_fits(num):
@@ -40,6 +50,7 @@ class RunInputs:
     def __init__(self, **kwargs) -> None:
         self.observable         = kwargs.get(const.KEY_OBSERVABLE,       const.OBS_T)
         self.sims_path          = kwargs.get(const.KEY_SIMS_PATH,        None)
+        self.noise_path         = kwargs.get(const.KEY_NOISE_PATH,       None)
         self.cmb_fpath          = kwargs.get(const.KEY_CMB_FPATH,        None)
         self.mask_fpath         = kwargs.get(const.KEY_MASK_FPATH,       None)
         self.nside              = kwargs.get(const.KEY_NSIDE,            64)
@@ -147,6 +158,7 @@ class RunInputs:
         kwargs = {}
         kwargs.setdefault(const.KEY_OBSERVABLE,       self.observable)
         kwargs.setdefault(const.KEY_SIMS_PATH,        self.sims_path)
+        kwargs.setdefault(const.KEY_NOISE_PATH,        self.noise_path)
         kwargs.setdefault(const.KEY_CMB_FPATH,        self.cmb_fpath)
         kwargs.setdefault(const.KEY_MASK_FPATH,       self.mask_fpath)
         kwargs.setdefault(const.KEY_SIMS_ANOM_PATH,   self.sims_dir_anom_path)

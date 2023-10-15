@@ -6,6 +6,7 @@
 /input/cmb_fits_files
 /input/smica_sims
 /input/commander_sims
+/input/commander_noise
 /unessential
 /test.ipynb
 *.blend1
