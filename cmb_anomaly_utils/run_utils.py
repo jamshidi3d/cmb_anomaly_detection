@@ -30,13 +30,21 @@ class MapGenerator:
         _data       = read_func(self.cmb_fpath, self.nside)
         return PixMap(_data, self.pos, self.mask)
 
-    def create_sim_map_from_txt(self, num, use_noise = False):
+    def create_sim_map_from_txt(self, num, use_noise = False, bad_noise_value = 1e8):
         fpathname  = self.sims_path + self.sims_fnames[num]
         _data      = freader.read_txt_attr(fpathname)
         if use_noise:
             max_noise_num = len(self.noise_fnames)
-            fpathname = self.noise_path + self.noise_fnames[num % max_noise_num]
-            _noise = freader.read_txt_attr(fpathname)
+            noise_num = num % max_noise_num
+            while True:
+                fpathname = self.noise_path + self.noise_fnames[noise_num]
+                _noise = freader.read_txt_attr(fpathname)
+                any_inf_values = np.any(_noise > bad_noise_value) or\
+                                    np.any(_noise < -bad_noise_value)
+                if(any_inf_values):
+                    noise_num = (noise_num + 1) % max_noise_num
+                    continue
+                break
             _data += _noise
         # if self.observable == const.OBS_T:
         #     _data -= np.nanmean(_data)
