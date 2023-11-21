@@ -17,12 +17,12 @@ run_inputs.nside                = 64
 run_inputs.dir_nside            = 16
 run_inputs.geom_start           = 0
 run_inputs.geom_stop            = 180
-run_inputs.delta_geom_samples   = 5
+run_inputs.delta_geom_samples   = 1
 run_inputs.stripe_thickness     = 20
 run_inputs.pole_lat             = -20
 run_inputs.pole_lon             = 221
 
-dir_cap_sizes       = cau.stat_utils.get_range(20, 70, 10)
+dir_cap_sizes       = [30]#cau.stat_utils.get_range(20, 70, 10)
 pre_dir_cap_sizes   = cau.stat_utils.get_range(10, 90, 5)
 
 output_path = cau.output.ensure_output_path(base_path, **run_inputs.to_kwargs())
