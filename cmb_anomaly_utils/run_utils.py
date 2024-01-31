@@ -83,7 +83,7 @@ class RunInputs:
         self._geom_start        = kwargs.get(const.KEY_GEOM_START,       0)
         self._geom_stop         = kwargs.get(const.KEY_GEOM_STOP,        180)
         self._dgeom_samples     = kwargs.get(const.KEY_DGEOM_SAMPLES,    5)
-        self.stripe_thickness    = kwargs.get(const.KEY_STRIPE_THICKNESS,  20)
+        self.stripe_thickness   = kwargs.get(const.KEY_STRIPE_THICKNESS, 20)
         self.set_geom_range()
         self.set_measure_range()
 

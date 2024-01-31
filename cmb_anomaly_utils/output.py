@@ -74,6 +74,7 @@ def get_title_tex(**kwargs):
 tex_unit_dict = {
     const.STD_FLAG:         r'$[\mu K]$',
     const.D_STD2_FLAG:      r'$[\mu K]^2$',
+    const.VAR_FLAG:         r'$[\mu K]^2$',
     const.NORM_CORR_FLAG:   r'',
     const.D_CORR2_FLAG:     r'$[\mu K]^4$',
     const.NORM_STD_FLAG:    r'',

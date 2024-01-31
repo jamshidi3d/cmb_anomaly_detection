@@ -14,6 +14,7 @@ NORM_STD_FLAG       = 'NORM_STD'
 D_STD2_FLAG         = 'DSTD2'
 NORM_D_STD2_FLAG    = 'NORM_D_STD2'
 MEAN_FLAG           = 'MEAN'
+VAR_FLAG            = 'VAR'
 
 # ------- Observables -------
 OBS_T               = 'T'
