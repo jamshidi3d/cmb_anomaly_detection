@@ -2,15 +2,27 @@
 import healpy as hp
 import numpy as np
 
-from . import math_utils as mu
+from . import math_utils as mu, coords
 from . import file_reader
 from .dtypes import PixMap
 
-# ------ Remove Monopole/Dipole ------
+# ------ Monopole/Dipole ------
 def remove_monopole_dipole(pix_map:PixMap):
     result = hp.remove_dipole(pix_map.raw_data)
     pix_map.raw_data = result.data
     return result
+
+def get_dipole_amplitude(pix_map:PixMap):
+    res = hp.fit_dipole(pix_map.raw_data)
+    amplitude = np.sqrt(np.dot(res[1], res[1]))
+    return amplitude
+
+# TODO The function get_pix_by_ang has to be checked
+def get_dipole_direction_index(pix_map:PixMap, dir_nside = 16):
+    res = hp.fit_dipole(pix_map.raw_data)
+    direction = hp.vec2ang(res[1], lonlat=True)
+    lon, lat = direction[0], direction[1]
+    return coords.get_pix_by_ang(dir_nside, lat, lon)
 
 # ------ Map Filling ------
 def fill_map_with_cap(data_map, pole_lat, pole_lon, cap_size, fake_poles):
