@@ -27,7 +27,7 @@ def get_stripe_rest_selection_filters(pix_map: PixMap, start_angle, stop_angle):
     r_o_s_selection = np.logical_not(stripe_selection)
     return stripe_selection, r_o_s_selection
 
-def get_stripe(pix_map: PixMap, start_angle, stop_angle):
+def get_stripe_rest(pix_map: PixMap, start_angle, stop_angle):
     '''returns a stripe between given angles and the rest of sky\n
     start and stop angles have to be in degrees'''
     stripe_sel, r_o_s_sel = get_stripe_rest_selection_filters(  pix_map,

@@ -161,7 +161,7 @@ def get_stripe_measure(sky_pix:PixMap, **kwargs):
     measure_results = np.zeros(len(geom_range))
     for i in range(len(stripe_centers)):
         start, end          = stripe_starts[i], stripe_ends[i]
-        stripe, rest_of_sky  = geom.get_stripe(sky_pix, start, end)
+        stripe, rest_of_sky  = geom.get_stripe_rest(sky_pix, start, end)
         # Remove invalid pixels
         if stripe.get_visible_pixels_ratio() < min_pix_ratio or \
                 rest_of_sky.get_visible_pixels_ratio() < min_pix_ratio:
@@ -172,3 +172,39 @@ def get_stripe_measure(sky_pix:PixMap, **kwargs):
                            np.minimum(ang, 180 - ang))
         measure_results[i] = measure_func(stripe, rest_of_sky, **_kwargs)
     return measure_results
+
+
+# Handy Function to Compute Measures with Common Stripe Limits
+def calc_measure_subtract_mean_field(
+        pix_map: PixMap,
+        sims_maps: list[PixMap],
+        stripe_starts, stripe_centers, stripe_ends,
+        **kwargs):
+    # Init
+    max_sim_num   = kwargs.get(const.KEY_MAX_SIM_NUM)
+    geom_range    = kwargs.get(const.KEY_GEOM_RANGE, su.get_range())
+    min_pix_ratio = kwargs.get(const.KEY_MIN_PIX_RATIO, 1)
+    measure_flag  = kwargs.get(const.KEY_MEASURE_FLAG, const.STD_FLAG)
+    mfunc = func_dict[measure_flag]
+    main_measure = np.zeros(len(stripe_centers))
+    aux_measures = np.zeros((max_sim_num, len(geom_range)))
+    # Loop in Measure Samples, That Are: Stripe Centers
+    for m_i in range(len(stripe_centers)):
+        start, end = stripe_starts[m_i], stripe_ends[m_i]
+        stripe_filter, rest_filter = \
+            geom.get_stripe_rest_selection_filters(pix_map, start, end)
+        # Take Common Stripe
+        dummy_stripe = pix_map.extract_selection(stripe_filter)
+        visible_ratio = dummy_stripe.get_visible_pixels_ratio()
+        if visible_ratio < min_pix_ratio:
+            main_measure[m_i] = np.nan
+            continue
+        # If It Is Visible Enough Compute Measure
+        main_measure[m_i] = mfunc(dummy_stripe, None)
+        for sim_num in range(max_sim_num):
+            dummy_stripe.raw_data = sims_maps[sim_num].raw_data[stripe_filter]
+            aux_measures[sim_num, m_i] = mfunc(dummy_stripe, None)
+    # Subtract Mean Field
+    _mean  = np.mean(aux_measures, axis = 0)
+    _var   = np.var(aux_measures, axis = 0)
+    return (main_measure - _mean) / _var

@@ -57,6 +57,7 @@ class MapGenerator:
 class RunInputs:
     def __init__(self, **kwargs) -> None:
         self.observable         = kwargs.get(const.KEY_OBSERVABLE,       const.OBS_T)
+        self.max_sim_num        = kwargs.get(const.MAX_SIM_NUM,          1000)
         self.sims_path          = kwargs.get(const.KEY_SIMS_PATH,        None)
         self.noise_path         = kwargs.get(const.KEY_NOISE_PATH,       None)
         self.cmb_fpath          = kwargs.get(const.KEY_CMB_FPATH,        None)
@@ -165,8 +166,9 @@ class RunInputs:
     def to_kwargs(self):
         kwargs = {}
         kwargs.setdefault(const.KEY_OBSERVABLE,       self.observable)
+        kwargs.setdefault(const.KEY_MAX_SIM_NUM,      self.max_sim_num)
         kwargs.setdefault(const.KEY_SIMS_PATH,        self.sims_path)
-        kwargs.setdefault(const.KEY_NOISE_PATH,        self.noise_path)
+        kwargs.setdefault(const.KEY_NOISE_PATH,       self.noise_path)
         kwargs.setdefault(const.KEY_CMB_FPATH,        self.cmb_fpath)
         kwargs.setdefault(const.KEY_MASK_FPATH,       self.mask_fpath)
         kwargs.setdefault(const.KEY_SIMS_ANOM_PATH,   self.sims_dir_anom_path)

@@ -1,3 +1,6 @@
+# ------- Simulation flags -------
+MAX_SIM_NUM             = 1000
+
 # ------- HealPix Flags -------
 NESTED              = 'NESTED'
 RING                = 'RING'
@@ -33,6 +36,7 @@ ANG_THRESHOLD       = 0.0001
 DIST_THRESHOLD      = 0.0000001
 
 # ------- Input parameters (keys) -------
+KEY_MAX_SIM_NUM         = 'max_sim_num'
 KEY_OBSERVABLE          = 'observable' 
 KEY_SIMS_PATH           = 'sims_path'
 KEY_CMB_FPATH           = 'cmb_fpath'
