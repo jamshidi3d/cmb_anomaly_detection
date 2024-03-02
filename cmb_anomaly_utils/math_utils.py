@@ -34,8 +34,9 @@ def get_single_legendre_modulation(theta_arr, y_arr, l):
     return get_single_legendre_coef(theta_arr, y_norm, l)
 
 def get_all_legendre_modulation(theta_arr, y_arr, max_l):
-    y_norm = get_normalized_to_mean(y_arr)
-    return get_all_legendre_coefs(theta_arr, y_norm, max_l)
+    a_l = get_all_legendre_coefs(theta_arr, y_arr, max_l)
+    a_l = a_l / a_l[0]
+    return a_l
 
 def create_legendre_modulation_factor(pos_arr, a_l):
     '''Generates the factor to be multiplied by map'''

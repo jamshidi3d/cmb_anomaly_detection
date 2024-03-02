@@ -70,9 +70,6 @@ def calc_norm_corr(patch1:PixMap, patch2:PixMap = None, **kwargs):
     geom_int    = mu.integrate_curve(measure_range[:max_index], tctt[:max_index] ** 2)
     return geom_int / f_int - 1
 
-def calc_var(patch1:PixMap, patch2:PixMap = None, **kwargs):
-    return su.var_pix_map(patch1)
-
 def calc_std(patch1:PixMap, patch2:PixMap = None, **kwargs):
     return su.std_pix_map(patch1)
 
@@ -175,16 +172,18 @@ def get_stripe_measure(sky_pix:PixMap, **kwargs):
 
 
 # Handy Function to Compute Measures with Common Stripe Limits
-def calc_measure_subtract_mean_field(
+def calc_stripe_measure_subtract_mean_field(
         pix_map: PixMap,
         sims_maps: list[PixMap],
-        stripe_starts, stripe_centers, stripe_ends,
         **kwargs):
     # Init
     max_sim_num   = kwargs.get(const.KEY_MAX_SIM_NUM)
     geom_range    = kwargs.get(const.KEY_GEOM_RANGE, su.get_range())
     min_pix_ratio = kwargs.get(const.KEY_MIN_PIX_RATIO, 1)
     measure_flag  = kwargs.get(const.KEY_MEASURE_FLAG, const.STD_FLAG)
+    stripe_thickness = kwargs.get(const.KEY_STRIPE_THICKNESS, 20)
+    stripe_starts, stripe_centers, stripe_ends = \
+        geom.get_stripe_limits(stripe_thickness, geom_range)
     mfunc = func_dict[measure_flag]
     main_measure = np.zeros(len(stripe_centers))
     aux_measures = np.zeros((max_sim_num, len(geom_range)))
@@ -204,6 +203,12 @@ def calc_measure_subtract_mean_field(
         for sim_num in range(max_sim_num):
             dummy_stripe.raw_data = sims_maps[sim_num].raw_data[stripe_filter]
             aux_measures[sim_num, m_i] = mfunc(dummy_stripe, None)
+    ''' Don't normalize for the moment!
+    # Normalize
+    main_measure = mu.get_normalized_to_mean(main_measure)
+    for sim_num in range(max_sim_num):
+        aux_measures[sim_num] = mu.get_normalized_to_mean(aux_measures[sim_num])
+    '''
     # Subtract Mean Field
     _mean  = np.mean(aux_measures, axis = 0)
     _var   = np.var(aux_measures, axis = 0)
