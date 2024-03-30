@@ -89,8 +89,12 @@ def calc_var(patch1:PixMap, patch2:PixMap, **kwargs):
 def calc_mean(patch1:PixMap, patch2:PixMap = None, **kwargs):
     return su.mean_pix_map(patch1)
 
+def calc_dmean2(patch1:PixMap, patch2:PixMap = None, **kwargs):
+    return (su.mean_pix_map(patch1) - su.mean_pix_map(patch2))**2
+
 func_dict = {
     const.MEAN_FLAG:        calc_mean,
+    const.D_MEAN2_FLAG:     calc_dmean2,
     const.NORM_CORR_FLAG:   calc_norm_corr,
     const.VAR_FLAG:         calc_var,
     const.D_CORR2_FLAG:     calc_dcorr2,
