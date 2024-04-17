@@ -6,15 +6,15 @@ from . import const
 def does_path_exist(path):
     return os.path.exists(path)
 
-def ensure_path(path):
+def ensure_dir(path):
     '''Create path if doesn't exist'''
     if not does_path_exist(path):
         os.makedirs(path)
     return path
 
-def ensure_output_path(base_path = './', **kwargs):
+def ensure_output_dir(base_path = './', **kwargs):
     path = get_output_path(base_path, **kwargs)
-    ensure_path(path)
+    ensure_dir(path)
     return path
 
 def get_output_path(base_path = './', **kwargs):
