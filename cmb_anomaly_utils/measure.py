@@ -92,8 +92,17 @@ def calc_mean(patch1:PixMap, patch2:PixMap = None, **kwargs):
 def calc_dmean2(patch1:PixMap, patch2:PixMap = None, **kwargs):
     return (su.mean_pix_map(patch1) - su.mean_pix_map(patch2))**2
 
+def calc_skewness(patch1:PixMap, patch2:PixMap = None, **kwargs):
+    return su.skewness_pixmap(patch1)
+
+def calc_kurtosis(patch1:PixMap, patch2:PixMap = None, **kwargs):
+    return su.kurtosis_pixmap(patch1)
+
+
 func_dict = {
     const.MEAN_FLAG:        calc_mean,
+    const.SKEWNESS_FLAG:         calc_skewness,
+    const.KURTOSIS_FLAG:         calc_kurtosis,
     const.D_MEAN2_FLAG:     calc_dmean2,
     const.NORM_CORR_FLAG:   calc_norm_corr,
     const.VAR_FLAG:         calc_var,
@@ -164,10 +173,13 @@ def get_stripe_measure(sky_pix:PixMap, **kwargs):
         start, end          = stripe_starts[i], stripe_ends[i]
         stripe, rest_of_sky  = geom.get_stripe_rest(sky_pix, start, end)
         # Remove invalid pixels
-        if stripe.get_visible_pixels_ratio() < min_pix_ratio or \
-                rest_of_sky.get_visible_pixels_ratio() < min_pix_ratio:
+        if stripe.get_visible_pixels_ratio() < min_pix_ratio:
             measure_results[i] = np.nan
             continue
+        if measure_flag in [const.D_CORR2_FLAG, const.D_MEAN2_FLAG, const.D_STD2_FLAG]:
+            if rest_of_sky.get_visible_pixels_ratio() < min_pix_ratio:
+                measure_results[i] = np.nan
+                continue
         ang   = np.maximum(start, end)
         _kwargs.setdefault(const.KEY_MAX_VALID_ANG,
                            np.minimum(ang, 180 - ang))

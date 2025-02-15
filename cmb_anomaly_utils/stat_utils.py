@@ -1,5 +1,6 @@
 import numpy as np
 import concurrent.futures
+from scipy.stats import skew, kurtosis
 from numba import njit, prange
 
 from .dtypes import PixMap
@@ -136,3 +137,11 @@ def mean_pix_map(pix_map:PixMap):
     if len(_data) == 0:
         return 0
     return fast_mean(_data)
+
+def skewness_pixmap(pix_map:PixMap):
+    _data = pix_map.data
+    return skew(_data)
+
+def kurtosis_pixmap(pix_map:PixMap):
+    _data = pix_map.data
+    return kurtosis(_data)

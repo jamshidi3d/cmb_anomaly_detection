@@ -1,6 +1,12 @@
 import numpy as np
 from scipy.interpolate import CubicSpline
 
+_lmax = None
+_theta_domain = None
+_sin_theta = None      
+_P_l = None      
+        
+
 def integrate_curve(x, y):
     dx = x[1:] - x[:-1]
     mean_y = 0.5 * (y[1:] + y[:-1])
@@ -29,6 +35,24 @@ def get_all_legendre_coefs(theta_arr, y_arr, max_l):
         a_l[l] = get_single_legendre_coef(theta_arr, y_arr, l)
     return a_l
 
+def get_all_coefs_having_legendre_values(y_arr, theta_arr = None, max_l = None, do_reset_domain = False):
+    # Check if it needs to recalculate P_l
+    global _lmax
+    global _theta_domain
+    global _sin_theta
+    global _P_l
+    if do_reset_domain or _lmax != max_l or _lmax is None :
+        _theta_domain = theta_arr
+        _sin_theta = np.sin(theta_arr)
+        _lmax = max_l
+        _P_l = np.array([legendre(ell, np.cos(theta_arr)) for ell in range(_lmax + 1)])
+    # Actual calculation
+    a_l = np.zeros(max_l + 1)
+    for ell in range(0, max_l + 1):
+        a_l[ell] = integrate_curve( _theta_domain, 
+                                    y_arr * _sin_theta * _P_l[ell] )
+    return a_l
+
 def get_single_legendre_modulation(theta_arr, y_arr, l):
     y_norm = get_normalized_to_mean(y_arr)
     return get_single_legendre_coef(theta_arr, y_norm, l)
@@ -44,6 +68,19 @@ def create_legendre_modulation_factor(pos_arr, a_l):
     z = pos_arr[:, 2]
     legendre_on_pix = np.array([a_l[i] * legendre(i, z) for i in range(1, len(a_l))])
     return (1 + np.sum(legendre_on_pix, axis = 0))
+
+# def spherical_psuedo_gaussian(sigma, pole_vec, pos_array, )
+
+def normalized_spherical_gaussian_emulator(sharpness, pole_vec, pos_array, area = 4 * np.pi):
+    _s = sharpness
+    # This is the normalized value of the amplitude,
+    # if we integrate over the whole sphere:
+    # a = 1/2pi * s/(e^(-2s) - 1)
+    amplitude = _s/ (2*np.pi) / (1 - np.exp(-2*_s))
+    dot_arr = np.dot(np.transpose(pole_vec), pos_array)
+    return amplitude * np.exp(sharpness * (dot_arr - 1))
+
+
 
 #--------- extrapolation ---------
 def extrapolate_curve(x, y, extended_x, curve_type='clamped', deriv=0):
