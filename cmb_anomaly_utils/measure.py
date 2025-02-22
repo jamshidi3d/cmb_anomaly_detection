@@ -101,8 +101,8 @@ def calc_kurtosis(patch1:PixMap, patch2:PixMap = None, **kwargs):
 
 func_dict = {
     const.MEAN_FLAG:        calc_mean,
-    const.SKEWNESS_FLAG:         calc_skewness,
-    const.KURTOSIS_FLAG:         calc_kurtosis,
+    const.SKEWNESS_FLAG:    calc_skewness,
+    const.KURTOSIS_FLAG:    calc_kurtosis,
     const.D_MEAN2_FLAG:     calc_dmean2,
     const.NORM_CORR_FLAG:   calc_norm_corr,
     const.VAR_FLAG:         calc_var,
