@@ -1,12 +1,6 @@
 */__pycache__
 /__pycache__
-/output
-/miscellaneous
-/input/simulation/*.txt
-/input/cmb_fits_files
-/input/smica_sims
-/input/commander_sims
-/input/commander_noise
-/unessential
-/test.ipynb
+**/output/
+**/input/
+**/Plot/
 *.blend1
