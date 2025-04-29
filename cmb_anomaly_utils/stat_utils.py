@@ -118,7 +118,7 @@ def fast_mean(arr):
 
 @njit(fastmath = True)
 def fast_var(arr):
-    return np.std(arr)
+    return np.var(arr)
 
 def var_pix_map(pix_map:PixMap):
     _data = pix_map.data
