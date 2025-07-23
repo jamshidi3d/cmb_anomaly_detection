@@ -90,6 +90,8 @@ class RunInputs:
         self._dgeom_samples             = kwargs.get(const.KEY_DGEOM_SAMPLES,    5)
         self.stripe_thickness:'float'   = kwargs.get(const.KEY_STRIPE_THICKNESS, 20)
         self.lmax:'int'                 = kwargs.get(const.KEY_LMAX,             20)
+        self.ell_filter:'int'           = kwargs.get(const.KEY_ELL_FILTER,       5)
+        '''l0 of the butterworth high-pass filtering'''
         self.set_geom_range()
         self.set_measure_range()
 
@@ -202,4 +204,5 @@ class RunInputs:
         kwargs.setdefault(const.KEY_NDATA_CHUNKS,     self.ndata_chunks)
         kwargs.setdefault(const.KEY_STRIPE_THICKNESS, self.stripe_thickness)
         kwargs.setdefault(const.KEY_LMAX,             self.lmax)
+        kwargs.setdefault(const.KEY_ELL_FILTER,       self.ell_filter)
         return kwargs

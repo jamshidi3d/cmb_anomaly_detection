@@ -24,6 +24,20 @@ def get_dipole_direction_index(pix_map:PixMap, dir_nside = 16):
     lon, lat = direction[0], direction[1]
     return coords.get_pix_by_ang(dir_nside, lat, lon)
 
+# ------ High Pass Low Ell Filtering ------
+def butterworth_hpf(ell, l0_filter):
+    '''Butterworth high-pass filter in harmonic space. '''
+    return (ell / l0_filter)**4 / (1 + (ell / l0_filter)**4)
+
+def apply_butterworth_hpf(pix_map:PixMap, l0_filter):
+    """Apply Butterworth HPF to a HEALPix map."""
+    map_hp = pix_map.raw_data
+    alm = hp.map2alm(map_hp)
+    ell = np.arange(hp.Alm.getlmax(len(alm)))
+    filter_response = butterworth_hpf(ell, l0_filter)
+    filtered_alm = hp.almxfl(alm, filter_response)
+    pix_map.raw_data = hp.alm2map(filtered_alm, nside=hp.get_nside(map_hp))
+
 # ------ Map Filling ------
 def fill_map_with_cap(data_map, pole_lat, pole_lon, cap_size, fake_poles):
     nside = int(np.sqrt(len(data_map) / 12))
