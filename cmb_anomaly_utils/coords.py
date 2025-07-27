@@ -12,11 +12,11 @@ def convert_polar_to_spherical(lat, lon):
     theta, phi = np.deg2rad(90 - lat), np.deg2rad(lon)
     return theta, phi
 
-def get_angle_dist_polar(lat1, lon1, lat2, lon2):
+def get_angular_dist_polar(lat1, lon1, lat2, lon2):
     '''returns in Degrees'''
     v1, v2 = convert_polar_to_xyz(  np.array([lat1, lat2]),
                                     np.array([lon1, lon2]))
-    return get_angle_dist_xyz(np.array([v1]), np.array([v2]))
+    return get_angular_dist_xyz(np.array([v1]), np.array([v2]))
 
 #TODO
 def average_lon(lon_arr):
@@ -64,13 +64,18 @@ def normalize_vec(vec_ndarray):
 def dot_product(vec_nd1, vec_nd2):
     return np.dot(vec_nd1, np.transpose(vec_nd2))
 
-def get_angle_dist_xyz(vec_nd1, vec_nd2):
+def get_angular_dist_xyz(vec_nd1, vec_nd2):
     '''returns separation in Degrees, assuming vectors are normalized'''
-    ang_arr = np.degrees(np.arccos(dot_product(vec_nd1, vec_nd2)))
+    norm_vec_nd1 /= np.sqrt(np.sum(vec_nd1**2))
+    norm_vec_nd2 /= np.sqrt(np.sum(vec_nd2**2))
+    ang_arr = np.degrees(np.arccos(dot_product(norm_vec_nd1, norm_vec_nd2)))
     return ang_arr[0,0]
 
 def convert_polar_to_xyz(lat_ndarray, lon_ndarray):
     theta, phi = np.radians(90 - lat_ndarray), np.radians(lon_ndarray)
+    return convert_spherical_to_xyz(theta, phi)
+
+def convert_spherical_to_xyz(theta, phi):
     nx = np.sin(theta) * np.cos(phi)
     ny = np.sin(theta) * np.sin(phi)
     nz = np.cos(theta)
