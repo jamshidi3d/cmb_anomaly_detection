@@ -56,18 +56,16 @@ def normalize_xyz(x, y, z):
     r  = np.sqrt(x**2 + y**2 + z**2)
     return x/r, y/r, z/r
 
-def normalize_vec(vec_ndarray):
-    x, y, z     = separate_xyz(vec_ndarray)
-    nx, ny, nz  = normalize_xyz(x, y, z)
-    return combine_xyz(nx, ny, nz)
+def normalize_vec(vec_nd):
+    return vec_nd / np.sqrt(np.sum(vec_nd**2))
 
 def dot_product(vec_nd1, vec_nd2):
     return np.dot(vec_nd1, np.transpose(vec_nd2))
 
 def get_angular_dist_xyz(vec_nd1, vec_nd2):
     '''returns separation in Degrees, assuming vectors are normalized'''
-    norm_vec_nd1 /= np.sqrt(np.sum(vec_nd1**2))
-    norm_vec_nd2 /= np.sqrt(np.sum(vec_nd2**2))
+    norm_vec_nd1 = normalize_vec(vec_nd1)
+    norm_vec_nd2 = normalize_vec(vec_nd2)
     ang_arr = np.degrees(np.arccos(dot_product(norm_vec_nd1, norm_vec_nd2)))
     return ang_arr[0,0]
 
@@ -87,6 +85,8 @@ def convert_xyz_to_polar(vec_ndarray):
     theta   = np.arccos(z)
     phi     = np.arctan2(y, x)
     lat, lon = 90 - np.degrees(theta), np.degrees(phi)
+    while lon < 0:
+        lon += 360
     return lat, lon
 
 def rotate_angle_axis(vec_ndarray, angle, axis):
