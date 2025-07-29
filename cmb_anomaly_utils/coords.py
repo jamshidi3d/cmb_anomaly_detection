@@ -12,8 +12,12 @@ def convert_polar_to_spherical(lat, lon):
     theta, phi = np.deg2rad(90 - lat), np.deg2rad(lon)
     return theta, phi
 
-def get_angular_dist_polar(lat1, lon1, lat2, lon2):
-    '''returns in Degrees'''
+def get_angular_dist_polar(dir1, dir2):
+    '''
+    dir = (lat, lon)\n
+    Returns in Degrees'''
+    lat1, lon1 = dir1
+    lat2, lon2 = dir2
     v1, v2 = convert_polar_to_xyz(  np.array([lat1, lat2]),
                                     np.array([lon1, lon2]))
     return get_angular_dist_xyz(np.array([v1]), np.array([v2]))
