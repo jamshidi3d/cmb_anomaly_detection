@@ -158,6 +158,16 @@ def get_disc_indices(nside, disc_size, disc_lat, disc_lon):
     ipix_disc = hp.query_disc(nside= nside, vec=_vec, radius=np.radians(disc_size))
     return ipix_disc
 
+def get_pixel_indices_lying_on_lower_nside_pixel(nside_high, nside_low):
+    ratio = (nside_high / nside_low)**2
+    index_mapping = []
+    for ipix_low in range(hp.nside2npix(nside_low)):
+        first_subpix = hp.ring2nest(nside = nside_low, ipix = ipix_low) * ratio
+        pixels_high_nest = np.arange(first_subpix, first_subpix + ratio, dtype=int)
+        pixels_high_ring = hp.nest2ring(nside_high, ipix = pixels_high_nest)  
+        index_mapping.append(pixels_high_ring)
+    return index_mapping
+
 # ------- Pixel Rotation -------
 def rotate_pixels_pole_to_north(data_arr, pole_lat, pole_lon):
     theta, phi = convert_polar_to_spherical(pole_lat, pole_lon)
