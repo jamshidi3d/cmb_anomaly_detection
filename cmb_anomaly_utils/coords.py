@@ -12,8 +12,12 @@ def convert_polar_to_spherical(lat, lon):
     theta, phi = np.deg2rad(90 - lat), np.deg2rad(lon)
     return theta, phi
 
-def get_angular_dist_polar(lat1, lon1, lat2, lon2):
-    '''returns in Degrees'''
+def get_angular_dist_polar(dir1, dir2):
+    '''
+    dir = (lat, lon)\n
+    Returns in Degrees'''
+    lat1, lon1 = dir1
+    lat2, lon2 = dir2
     v1, v2 = convert_polar_to_xyz(  np.array([lat1, lat2]),
                                     np.array([lon1, lon2]))
     return get_angular_dist_xyz(np.array([v1]), np.array([v2]))
@@ -153,6 +157,16 @@ def get_disc_indices(nside, disc_size, disc_lat, disc_lon):
     _vec = hp.ang2vec(theta, phi)
     ipix_disc = hp.query_disc(nside= nside, vec=_vec, radius=np.radians(disc_size))
     return ipix_disc
+
+def get_pixel_indices_lying_on_lower_nside_pixel(nside_high, nside_low):
+    ratio = (nside_high / nside_low)**2
+    index_mapping = []
+    for ipix_low in range(hp.nside2npix(nside_low)):
+        first_subpix = hp.ring2nest(nside = nside_low, ipix = ipix_low) * ratio
+        pixels_high_nest = np.arange(first_subpix, first_subpix + ratio, dtype=int)
+        pixels_high_ring = hp.nest2ring(nside_high, ipix = pixels_high_nest)  
+        index_mapping.append(pixels_high_ring)
+    return index_mapping
 
 # ------- Pixel Rotation -------
 def rotate_pixels_pole_to_north(data_arr, pole_lat, pole_lon):
