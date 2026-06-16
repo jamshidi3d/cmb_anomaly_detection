@@ -66,7 +66,7 @@ class RunInputs:
         self.dir_nside:'int'            = kwargs.get(const.KEY_DIRNSIDE,         16)
         self.sims_dir_anom_path:'str'   = kwargs.get(const.KEY_SIMS_ANOM_PATH,   None)
         self.cmb_dir_anom_fpath:'str'   = kwargs.get(const.KEY_CMB_ANOM_FPATH,   None)
-        self.is_masked:'bool'           = kwargs.get(const.KEY_IS_MASKED,        False)
+        self.use_mask:'bool'           = kwargs.get(const.KEY_IS_MASKED,        False)
         self.tpcf_mode:'str'            = kwargs.get(const.KEY_TPCF_MODE,        const.TPCF_TT)
         self.pole_lon:'float'           = kwargs.get(const.KEY_POLE_LAT,         90)
         self.pole_lat:'float'           = kwargs.get(const.KEY_POLE_LON,         0)
@@ -167,7 +167,7 @@ class RunInputs:
     # ------ Utility ------
     @property
     def masked_txt(self):
-        return 'masked' if self.is_masked else 'inpainted'
+        return 'masked' if self.use_mask else 'inpainted'
 
     # ------ Conversion ------
     def to_kwargs(self):
@@ -182,7 +182,7 @@ class RunInputs:
         kwargs.setdefault(const.KEY_CMB_ANOM_FPATH,   self.cmb_dir_anom_fpath)
         kwargs.setdefault(const.KEY_NSIDE,            self.nside)
         kwargs.setdefault(const.KEY_DIRNSIDE,         self.dir_nside)
-        kwargs.setdefault(const.KEY_IS_MASKED,        self.is_masked)
+        kwargs.setdefault(const.KEY_IS_MASKED,        self.use_mask)
         kwargs.setdefault(const.KEY_TPCF_MODE,        self.tpcf_mode)
         kwargs.setdefault(const.KEY_POLE_LON,         self.pole_lon)
         kwargs.setdefault(const.KEY_POLE_LAT,         self.pole_lat)

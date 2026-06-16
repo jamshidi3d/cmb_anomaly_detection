@@ -21,6 +21,7 @@ D_MEAN2_FLAG        = 'DMEAN2'
 VAR_FLAG            = 'VAR'
 SKEWNESS_FLAG       = 'SKEWNESS'
 KURTOSIS_FLAG       = 'KURTOSIS'
+MU4_FLAG            = 'MU4'
 
 # ------- Observables -------
 OBS_T               = 'T'

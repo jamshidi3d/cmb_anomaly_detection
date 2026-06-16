@@ -1,6 +1,6 @@
 import numpy as np
 import concurrent.futures
-from scipy.stats import skew, kurtosis
+from scipy.stats import skew, kurtosis, moment as central_moment
 from numba import njit, prange
 
 from .dtypes import PixMap
@@ -145,3 +145,7 @@ def skewness_pixmap(pix_map:PixMap):
 def kurtosis_pixmap(pix_map:PixMap):
     _data = pix_map.data
     return kurtosis(_data)
+
+def mu4_pixmap(pix_map:PixMap):
+    _data = pix_map.data
+    return central_moment(_data, order=4)

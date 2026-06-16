@@ -168,6 +168,16 @@ def get_pixel_indices_lying_on_lower_nside_pixel(nside_high, nside_low):
         index_mapping.append(pixels_high_ring)
     return index_mapping
 
+def get_opposite_pixel(nside, ipix):
+    """Get the pixel index of the opposite direction"""
+    theta, phi = hp.pix2ang(nside, ipix)
+    opposite_theta = np.pi - theta
+    opposite_phi = phi + np.pi
+    # Normalize phi to [0, 2π)
+    opposite_phi = opposite_phi % (2 * np.pi)
+    opposite_ipix = hp.ang2pix(nside, opposite_theta, opposite_phi)
+    return opposite_ipix
+
 # ------- Pixel Rotation -------
 def rotate_pixels_pole_to_north(data_arr, pole_lat, pole_lon):
     theta, phi = convert_polar_to_spherical(pole_lat, pole_lon)

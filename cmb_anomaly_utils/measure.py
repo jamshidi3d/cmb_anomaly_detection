@@ -83,7 +83,7 @@ def calc_dstd2(patch1:PixMap, patch2:PixMap, **kwargs):
 def calc_norm_dstd2(patch1:PixMap, patch2:PixMap, **kwargs):
     return (calc_norm_std(patch1, **kwargs) - calc_norm_std(patch2, **kwargs))**2
 
-def calc_var(patch1:PixMap, patch2:PixMap, **kwargs):
+def calc_var(patch1:PixMap, patch2:PixMap = None, **kwargs):
     return su.var_pix_map(patch1)
 
 def calc_mean(patch1:PixMap, patch2:PixMap = None, **kwargs):
@@ -98,11 +98,16 @@ def calc_skewness(patch1:PixMap, patch2:PixMap = None, **kwargs):
 def calc_kurtosis(patch1:PixMap, patch2:PixMap = None, **kwargs):
     return su.kurtosis_pixmap(patch1)
 
+def calc_mu4(patch1:PixMap, patch2:PixMap = None, **kwargs):
+    return su.mu4_pixmap(patch1)
+
+
 
 func_dict = {
     const.MEAN_FLAG:        calc_mean,
     const.SKEWNESS_FLAG:    calc_skewness,
     const.KURTOSIS_FLAG:    calc_kurtosis,
+    const.MU4_FLAG:         calc_mu4,
     const.D_MEAN2_FLAG:     calc_dmean2,
     const.NORM_CORR_FLAG:   calc_norm_corr,
     const.VAR_FLAG:         calc_var,
